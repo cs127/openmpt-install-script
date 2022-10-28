@@ -527,6 +527,7 @@ check_resource() {
 }
 
 check_resources() {
+    mkdir -p "$SCRIPTDIR/resources"
     for resource in "$@"; do check_resource "$resource"; done
 }
 
