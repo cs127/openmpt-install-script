@@ -1,6 +1,6 @@
 # cs127's OpenMPT install script for Linux
 
-This is an Bash script for simple installation of [OpenMPT](https://openmpt.org) on Linux (with [Wine](https://winehq.org)).
+This is a Bash script for simple installation of [OpenMPT](https://openmpt.org) on Linux (with [Wine](https://winehq.org)).
 
 It also creates a desktop entry that can be accessed through your application menu, which you can open module files with, or even associate module files with it.
 
