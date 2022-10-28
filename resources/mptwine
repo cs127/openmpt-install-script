@@ -1,0 +1,5 @@
+#!/usr/bin/bash
+MPTDIR=~/.openmpt
+export WINEPREFIX=$MPTDIR/wine
+export WINEDEBUG=-all
+wine "$@"

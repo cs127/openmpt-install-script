@@ -1,0 +1,61 @@
+#!/bin/bash
+
+# cs127's OpenMPT launch script for Linux
+# version 0.0.0
+
+# https://cs127.github.io
+
+
+# Command line switches are the same as they are for the Windows executable,
+# as seen in https://wiki.openmpt.org/Manual:_Command-line_Parameters
+# but with two hyphens instead of a slash, and with hyphen-separated lowercase
+# words instead of camelCase.
+
+# Example: --no-assembly instead of /noAssembly
+
+# Notes:
+# The --shared argument has a short version -s,
+# the --portable argument is ignored, since it can break things,
+# and the --no-plugs and --no-dls arguments can also be written as
+# --no-plugins and --no-soundfonts respectively.
+
+
+files=()
+args=""
+
+# Set Wine options
+MPTDIR=~/.openmpt
+export WINEPREFIX=$MPTDIR/wine
+export WINEDEBUG=-all
+
+# Detect architecture
+if [ -z ${MPTARCH+x} ]; then
+    uname -m | grep '64' > /dev/null && MPTARCH=64 || MPTARCH=32
+elif [ "$MPTARCH" != "64" ] && [ "$MPTARCH" != "32" ]; then
+    echo Invalid architecture \'$MPTARCH\'. Must be \'64\' or \'32\'.
+    exit 65
+fi
+
+# Handle short options (currently only -s).
+if [[ $1 != --* ]]; then
+    while getopts "s" opt; do
+        case $opt in
+            s) args+="/shared " ;;
+        esac
+    done
+fi
+
+# Iterate through all arguments and parse them as options or files appropriately.
+for arg in "$@"; do
+    if [[ "$arg" == --* ]]; then
+        if [ "$arg" = "--no-plugins" ];    then arg="--no-plugs"; fi
+        if [ "$arg" = "--no-soundfonts" ]; then arg="--no-dls";   fi
+        if [ "$arg" != "--portable" ]; then args+="$(echo "$arg" | sed -E -e 's/--/\//g' -e 's/-(.)/\U\1/g') "; fi
+    elif [[ "$arg" != -* ]]; then
+        files+=("$(winepath -w "$arg")")
+    fi
+done
+
+# Launch OpenMPT.
+[ "$MPTARCH" = "64" ] && MPTARCHDIR=amd64 || MPTARCHDIR=x86
+wine $MPTDIR/resources/bin/$MPTARCHDIR/OpenMPT.exe $args "${files[@]}"

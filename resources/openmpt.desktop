@@ -1,0 +1,12 @@
+[Desktop Entry]
+Type=Application
+Name=OpenMPT
+GenericName=Module Music Tracker
+Comment=Create and modify module music
+Icon=openmpt
+Exec=~/.local/bin/openmpt --shared %F
+MimeType=audio/x-mod;audio/x-s3m;audio/x-xm;audio/x-it;audio/x-mptm;audio/x-s3i;audio/x-xi;audio/x-iti;application/x-tun;application/x-tc
+Categories=AudioVideo;Audio;Midi;Sequencer;Music
+Keywords=modplug;tracker;mpt;module;mod
+StartupNotify=true
+StartupWMClass=openmpt.exe
