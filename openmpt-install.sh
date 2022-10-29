@@ -1,13 +1,13 @@
 #!/usr/bin/bash
 
 # cs127's OpenMPT install/update script for Linux
-# version 0.0.0
+# version 0.0.1
 
 # https://cs127.github.io
 
 
 
-SCRIPTVER=0.0.0
+SCRIPTVER=0.0.1
 DEPS=("wine" "wget" "jq" "unzip")
 
 URL_SCRIPTRESOURCES="https://github.com/cs127/openmpt-install-script/raw/master/resources/"
@@ -28,6 +28,7 @@ SCRIPT=$0
 SCRIPTDIR="$(cd "$(dirname "$0")" && pwd)"
 
 existingversion=false
+uninstall=false
 
 channel=""
 version=""
@@ -84,10 +85,10 @@ endmessage() {
     local time="";
     if ! [ -z ${start_time+x} ] && ! [ -z ${end_time+x} ] ; then
         local tr="$(($end_time-$start_time))"
-        time="$(sed 's/...$/.&/' <<< $tr)"
-        [ $tr -lt 1000 ] && time="0$time"
-        [ $tr -lt 100  ] && time="0.0$time"
-        [ $tr -lt 10   ] && time="0.00$time"
+        local tu="$(sed 's/...$/.&/' <<< $tr)"; time="$tu"
+        [ $tr -lt 1000 ] && time="0$tu"
+        [ $tr -lt 100  ] && time="0.0$tu"
+        [ $tr -lt 10   ] && time="0.00$tu"
     fi
     p_fmt f_bold c_cyan
     p_tln "_______________________________________________"
@@ -139,10 +140,10 @@ endmessage_uninstall() {
     local time="";
     if ! [ -z ${start_time+x} ] && ! [ -z ${end_time+x} ] ; then
         local tr="$(($end_time-$start_time))"
-        time="$(sed 's/...$/.&/' <<< $tr)"
-        [ $tr -lt 1000 ] && time="0$time"
-        [ $tr -lt 100  ] && time="0.0$time"
-        [ $tr -lt 10   ] && time="0.00$time"
+        local tu="$(sed 's/...$/.&/' <<< $tr)"; time="$tu"
+        [ $tr -lt 1000 ] && time="0$tu"
+        [ $tr -lt 100  ] && time="0.0$tu"
+        [ $tr -lt 10   ] && time="0.00$tu"
     fi
     p_fmt f_bold c_cyan
     p_tln "_______________________________________________"
@@ -361,7 +362,8 @@ configure_wine() {
 uninstall_openmpt_files() {
     p_fmt f_bold c_white
     p_trw "Uninstalling OpenMPT files..."
-    if rm -rf "$MPTDIR" ; then p_fmt c_green && p_tln "DONE" && p_fmt f_unbold c_reset
+    if rm -rf "$MPTDIR/resources" "$MPTDIR/.mptver" "$MPTDIR/.mptchn"
+    then p_fmt c_green && p_tln "DONE" && p_fmt f_unbold c_reset
     else p_fmt c_red && p_tln "FAILED" && p_fmt f_unbold c_reset && stop 127; fi
 }
 
@@ -372,14 +374,24 @@ uninstall_icon() {
 uninstall_desktop_entry() {
     p_fmt f_bold c_white
     p_trw "Uninstalling desktop entry..."
-    if rm "$APPDIR/openmpt.desktop" && uninstall_icon ; then p_fmt c_green && p_tln "DONE" && p_fmt f_unbold c_reset
+    if rm "$APPDIR/openmpt.desktop" && uninstall_icon
+    then p_fmt c_green && p_tln "DONE" && p_fmt f_unbold c_reset
     else p_fmt c_red && p_tln "FAILED" && p_fmt f_unbold c_reset && stop 127; fi
 }
 
 uninstall_launch_script() {
     p_fmt f_bold c_white
     p_trw "Uninstalling launch script..."
-    if rm "$BINDIR/openmpt" && rm "$BINDIR/mptwine" ; then p_fmt c_green && p_tln "DONE" && p_fmt f_unbold c_reset
+    if rm "$BINDIR/openmpt" && rm "$BINDIR/mptwine"
+    then p_fmt c_green && p_tln "DONE" && p_fmt f_unbold c_reset
+    else p_fmt c_red && p_tln "FAILED" && p_fmt f_unbold c_reset && stop 127; fi
+}
+
+uninstall_wine_files() {
+    p_fmt f_bold c_white
+    p_trw "Uninstalling Wine files..."
+    if rm -rf "$MPTDIR/wine"
+    then p_fmt c_green && p_tln "DONE" && p_fmt f_unbold c_reset
     else p_fmt c_red && p_tln "FAILED" && p_fmt f_unbold c_reset && stop 127; fi
 }
 
@@ -437,20 +449,9 @@ check_uninstall() {
     p_tln
 }
 
-uninstall_mode() {
-    check_uninstall
-    get_start_time
-    uninstall_openmpt_files
-    uninstall_desktop_entry
-    uninstall_launch_script
-    get_end_time
-    endmessage_uninstall
-    quit
-}
-
 check_arg() {
     [ "$1" = "" ] && show_usage && quit
-    [ "$1" = "uninstall" ] && uninstall_mode && quit
+    [ "$1" = "uninstall" ] && uninstall=true && return
     [ "$1" != "release" ] && [ "$1" != "next" ] && [ "$1" != "development" ] && show_usage && quit 1
     channel="$1"
 }
@@ -590,17 +591,28 @@ clear
 startmessage
 check_oldsetup
 check_arg $1
-check_deps ${DEPS[@]}
-check_resources ${RESOURCES[@]}
-get_latest_version $channel
-check_install
-get_start_time
-download
-prepare
-install_openmpt_files
-install_desktop_entry
-install_launch_script
-configure_wine
-get_end_time
-endmessage
+if [ "$uninstall" = true ]; then
+    check_uninstall
+    get_start_time
+    uninstall_openmpt_files
+    uninstall_desktop_entry
+    uninstall_launch_script
+    uninstall_wine_files
+    get_end_time
+    endmessage_uninstall
+else
+    check_deps ${DEPS[@]}
+    check_resources ${RESOURCES[@]}
+    get_latest_version $channel
+    check_install
+    get_start_time
+    download
+    prepare
+    install_openmpt_files
+    install_desktop_entry
+    install_launch_script
+    configure_wine
+    get_end_time
+    endmessage
+fi
 quit
