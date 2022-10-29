@@ -85,9 +85,9 @@ endmessage() {
     if ! [ -z ${start_time+x} ] && ! [ -z ${end_time+x} ] ; then
         local tr="$(($end_time-$start_time))"
         time="$(sed 's/...$/.&/' <<< $tr)"
-        [ $tr -lt 1000 ] && time="0$(sed 's/...$/.&/' <<< $tr)"
-        [ $tr -lt 100  ] && time="0.0$(sed 's/...$/.&/' <<< $tr)"
-        [ $tr -lt 10   ] && time="0.00$(sed 's/...$/.&/' <<< $tr)"
+        [ $tr -lt 1000 ] && time="0$time"
+        [ $tr -lt 100  ] && time="0.0$time"
+        [ $tr -lt 10   ] && time="0.00$time"
     fi
     p_fmt f_bold c_cyan
     p_tln "_______________________________________________"
@@ -140,9 +140,9 @@ endmessage_uninstall() {
     if ! [ -z ${start_time+x} ] && ! [ -z ${end_time+x} ] ; then
         local tr="$(($end_time-$start_time))"
         time="$(sed 's/...$/.&/' <<< $tr)"
-        [ $tr -lt 1000 ] && time="0$(sed 's/...$/.&/' <<< $tr)"
-        [ $tr -lt 100  ] && time="0.0$(sed 's/...$/.&/' <<< $tr)"
-        [ $tr -lt 10   ] && time="0.00$(sed 's/...$/.&/' <<< $tr)"
+        [ $tr -lt 1000 ] && time="0$time"
+        [ $tr -lt 100  ] && time="0.0$time"
+        [ $tr -lt 10   ] && time="0.00$time"
     fi
     p_fmt f_bold c_cyan
     p_tln "_______________________________________________"
