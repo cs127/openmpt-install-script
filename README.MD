@@ -28,15 +28,15 @@ It will automatically download the rest of the files in the repository after you
 
 * Make the script executable.
 ```bash
-chmod +x install-openmpt.sh
+chmod +x openmpt-install.sh
 ```
 * To install OpenMPT, run the script followed by the name of the update channel. I will use `development` as an example.
 ```bash
-./install-openmpt.sh development
+./openmpt-install.sh development
 ```
 * To uninstall OpenMPT, run the script followed by the word `uninstall`.
 ```bash
-./install-openmpt.sh uninstall
+./openmpt-install.sh uninstall
 ```
 The download channel can be one of the following:
 * `release`: current stable release.
