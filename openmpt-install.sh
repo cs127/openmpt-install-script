@@ -1,13 +1,13 @@
 #!/usr/bin/bash
 
 # cs127's OpenMPT install/update script for Linux
-# version 0.0.1
+# version 0.0.2
 
 # https://cs127.github.io
 
 
 
-SCRIPTVER=0.0.1
+SCRIPTVER=0.0.2
 DEPS=("wine" "wget" "jq" "unzip")
 
 URL_SCRIPTRESOURCES="https://github.com/cs127/openmpt-install-script/raw/master/resources/"
@@ -435,7 +435,7 @@ check_uninstall() {
     local message="You are about to uninstall OpenMPT. Continue?"
     [ -f "$MPTDIR/.mptver" ] && version="$(< "$MPTDIR/.mptver")" && message="You are about to uninstall OpenMPT $version. Continue?"
     p_fmt f_bold c_yellow
-    if ! [ -d "$MPTDIR" ] && ! [ -f "$APPDIR/openmpt.desktop" ] && ! [ -f "$BINDIR/openmpt" ]; then
+    if ! [ -d "$MPTDIR/resources" ] && ! [ -d "$MPTDIR/wine" ] && ! [ -f "$APPDIR/openmpt.desktop" ] && ! [ -f "$BINDIR/openmpt" ]; then
         p_tln "OpenMPT is not installed."
         quit
     fi
