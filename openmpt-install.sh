@@ -1,13 +1,13 @@
 #!/usr/bin/bash
 
 # cs127's OpenMPT install/update script for Linux
-# version 0.0.2
+# version 0.0.3
 
 # https://cs127.github.io
 
 
 
-SCRIPTVER=0.0.2
+SCRIPTVER=0.0.3
 DEPS=("wine" "wget" "jq" "unzip")
 
 URL_SCRIPTRESOURCES="https://github.com/cs127/openmpt-install-script/raw/master/resources/"
@@ -208,9 +208,9 @@ get_update_file() {
 
 get_latest_version() {
     get_update_file $1
-    version=$(jq -r '.[].version' "$TMPDIR/version.json")
-    url_download32=$(jq -r '.[].downloads."portable-x86".download_url' "$TMPDIR/version.json")
-    url_download64=$(jq -r '.[].downloads."portable-amd64".download_url' "$TMPDIR/version.json")
+    version=$(cat "$TMPDIR/version.json" | jq -r '.[].version')
+    url_download32=$(cat "$TMPDIR/version.json" | jq -r '.[].downloads."portable-x86".download_url')
+    url_download64=$(cat "$TMPDIR/version.json" | jq -r '.[].downloads."portable-amd64".download_url')
     rm "$TMPDIR/version.json"
 }
 
