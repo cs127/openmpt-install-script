@@ -140,7 +140,7 @@ cancel() {
     p_trw $F_UNBOLD $C_RED
     [ "$uninstall" != true ] && p_tln "Installation canceled." || p_tln "Uninstallation canceled."
     p_trw $C_RESET
-    quit 8
+    quit 64
 }
 
 error_deps() {
@@ -179,6 +179,10 @@ error() {
         3) error_oldsetup;;
         4) p_tln $F_BOLD $C_RED "Internet connection error." $F_UNBOLD $C_RESET;;
         5) p_tln $F_BOLD $C_RED "Server issued an error. The file probably does not exist." $F_UNBOLD $C_RESET;;
+        6) p_tln $F_BOLD $C_RED "File I/O error.";;
+        7) p_tln $F_BOLD $C_RED "Corrupted file.";;
+        8) p_tln $F_BOLD $C_RED "Unable to allocate enough memory.";;
+        9) p_tln $F_BOLD $C_RED "Not enough disk space.";;
         *) p_tln $F_BOLD $C_RED "An error occured." $F_UNBOLD $C_RESET; status=127;
     esac
     quit $status
@@ -190,8 +194,10 @@ checkstatus_wget() {
     p_tln $F_BOLD $C_RED "FAILED" $F_UNBOLD $C_RESET
     rm "$2"
     case $status in
-        8) error 5;;
-        *) error 4;;
+        4|5|6|7) error 4;;
+        8)       error 5;;
+        3)       error 6;;
+        *)       error 127;;
     esac
 }
 
@@ -201,7 +207,10 @@ checkstatus_unzip() {
     p_tln $F_BOLD $C_RED "FAILED" $F_UNBOLD $C_RESET
     rm "$2"
     case $status in
-        *) error 127;;
+        1|2|3|12|51) error 7;;
+        4|5|6|7)     error 8;;
+        9)           error 9;;
+        *)           error 127;;
     esac
 }
 
@@ -209,18 +218,14 @@ checkstatus_cp() {
     local status=$1
     [ $status -eq 0 ] && p_tln $F_BOLD $C_GREEN "DONE" $F_UNBOLD $C_RESET && return
     p_tln $F_BOLD $C_RED "FAILED" $F_UNBOLD $C_RESET
-    case $status in
-        *) error 127;;
-    esac
+    error 6
 }
 
 checkstatus_rm() {
     local status=$1
     [ $status -eq 0 ] && p_tln $F_BOLD $C_GREEN "DONE" $F_UNBOLD $C_RESET && return
     p_tln $F_BOLD $C_RED "FAILED" $F_UNBOLD $C_RESET
-    case $status in
-        *) error 127;;
-    esac
+    error 6
 }
 
 download_file() {
