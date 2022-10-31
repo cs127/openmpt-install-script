@@ -1,13 +1,13 @@
 #!/usr/bin/bash
 
 # cs127's OpenMPT install/update script for Linux
-# version 0.0.3
+# version 0.0.4
 
 # https://cs127.github.io
 
 
 
-SCRIPTVER=0.0.3
+SCRIPTVER=0.0.4
 DEPS=("wine" "wget" "jq" "unzip")
 
 URL_SCRIPTRESOURCES="https://github.com/cs127/openmpt-install-script/raw/master/resources/"
@@ -40,45 +40,37 @@ end_time=""
 
 
 
+RESETALL='\e[0m'
+F_BOLD='\e[1m'
+F_UNBOLD='\e[22m'
+C_BLACK='\e[30m'
+C_RED='\e[31m'
+C_GREEN='\e[32m'
+C_YELLOW='\e[33m'
+C_BLUE='\e[34m'
+C_MAGENTA='\e[35m'
+C_CYAN='\e[36m'
+C_WHITE='\e[37m'
+C_RESET='\e[39m'
+
+
+
 p_trw() {
-    echo -n "$@"
+    for arg in "$@"; do echo -ne "$arg"; done
 }
 
 p_tln() {
-    echo "$@"
-}
-
-p_fmt() {
-    for a in "$@"; do
-        case $a in
-            resetall)  echo -ne '\e[0m';;
-            f_bold)    echo -ne '\e[1m';;
-            f_unbold)  echo -ne '\e[22m';;
-            c_black)   echo -ne '\e[30m';;
-            c_red)     echo -ne '\e[31m';;
-            c_green)   echo -ne '\e[32m';;
-            c_yellow)  echo -ne '\e[33m';;
-            c_blue)    echo -ne '\e[34m';;
-            c_magenta) echo -ne '\e[35m';;
-            c_cyan)    echo -ne '\e[36m';;
-            c_white)   echo -ne '\e[37m';;
-            c_reset)   echo -ne '\e[39m';;
-        esac
-    done
+    p_trw "$@" "\n"
 }
 
 startmessage() {
     cd "$SCRIPTDIR"
-    p_tln
-    p_fmt f_bold c_cyan
+    p_tln $F_BOLD $C_CYAN
     p_tln "cs127's OpenMPT install/update script for Linux"
     p_tln "version $SCRIPTVER"
-    p_fmt c_magenta
-    p_tln "https://cs127.github.io"
-    p_fmt c_cyan
+    p_tln $C_MAGENTA "https://cs127.github.io" $C_CYAN
     p_tln "_______________________________________________"
-    p_fmt f_unbold c_reset
-    p_tln
+    p_tln $F_UNBOLD $C_RESET
 }
 
 endmessage() {
@@ -90,49 +82,35 @@ endmessage() {
         [ $tr -lt 100  ] && time="0.0$tu"
         [ $tr -lt 10   ] && time="0.00$tu"
     fi
-    p_fmt f_bold c_cyan
+    p_tln $F_BOLD $C_CYAN
     p_tln "_______________________________________________"
     p_tln
-    p_fmt c_green
-    p_tln "Successfully installed OpenMPT $version."
-    p_fmt f_bold c_cyan
-    if ! [ -z ${time+x} ]; then
-        p_trw "Total time spent: "
-        p_fmt c_magenta
-        p_trw "$time"
-        p_fmt c_cyan
-        p_tln " seconds."
-    fi
+    p_tln $C_GREEN "Successfully installed OpenMPT $version." $C_CYAN
+    ! [ -z ${time+x} ] && p_tln "Total time spent: " $C_MAGENTA "$time" $C_CYAN " seconds."
     if [ "$existingversion" != true ]; then
         p_tln
-        p_fmt c_cyan; p_trw "OpenMPT directory:  "; p_fmt c_magenta; p_tln "${MPTDIR/~/"~"}/resources"
-        p_fmt c_cyan; p_trw "32-bit exe:         "; p_fmt c_magenta; p_tln "${MPTDIR/~/"~"}/resources/bin/x86/OpenMPT.exe"
-        p_fmt c_cyan; p_trw "64-bit exe:         "; p_fmt c_magenta; p_tln "${MPTDIR/~/"~"}/resources/bin/amd64/OpenMPT.exe"
-        p_fmt c_cyan; p_trw "Wine directory:     "; p_fmt c_magenta; p_tln "${WINEPREFIX/~/"~"}"
-        p_fmt c_cyan; p_trw "Desktop entry:      "; p_fmt c_magenta; p_tln "${APPDIR/~/"~"}/openmpt.desktop"
-        p_fmt c_cyan; p_trw "Launch script:      "; p_fmt c_magenta; p_tln "${BINDIR/~/"~"}/openmpt"
-        p_fmt c_cyan; p_trw "Wine launch script: "; p_fmt c_magenta; p_tln "${BINDIR/~/"~"}/mptwine"
-        p_fmt f_unbold c_magenta
-        p_tln
+        p_tln $C_CYAN "OpenMPT directory:  " $C_MAGENTA "${MPTDIR/~/"~"}/resources"
+        p_tln $C_CYAN "32-bit exe:         " $C_MAGENTA "${MPTDIR/~/"~"}/resources/bin/x86/OpenMPT.exe"
+        p_tln $C_CYAN "64-bit exe:         " $C_MAGENTA "${MPTDIR/~/"~"}/resources/bin/amd64/OpenMPT.exe"
+        p_tln $C_CYAN "Wine directory:     " $C_MAGENTA "${WINEPREFIX/~/"~"}"
+        p_tln $C_CYAN "Desktop entry:      " $C_MAGENTA "${APPDIR/~/"~"}/openmpt.desktop"
+        p_tln $C_CYAN "Launch script:      " $C_MAGENTA "${BINDIR/~/"~"}/openmpt"
+        p_tln $C_CYAN "Wine launch script: " $C_MAGENTA "${BINDIR/~/"~"}/mptwine"
+        p_tln $F_UNBOLD $C_MAGENTA
         p_tln "You can now launch OpenMPT from your application menu."
         p_tln "Associating file types with it are also possible."
         p_tln
-        p_trw "If you have "; p_fmt c_cyan; p_trw "${BINDIR/~/"~"}"; p_fmt c_magenta; p_tln " in your PATH environment variable,"
-        p_trw "you can run "; p_fmt c_green; p_trw "openmpt"; p_fmt c_magenta; p_trw " from the command line, "
-        p_trw "and use "; p_fmt c_green; p_trw "mptwine"; p_fmt c_magenta; p_tln " as described below."
+        p_tln "If you have " $C_CYAN "${BINDIR/~/"~"}" $C_MAGENTA " in your PATH environment variable,"
+        p_tln "you can run " $C_GREEN "openmpt" $C_MAGENTA " from the command line, and use " $C_GREEN "mptwine" $C_MAGENTA " as described below."
         p_tln
-        p_trw "To configure basic Wine settings,  run ";   p_fmt c_green; p_tln "mptwine winecfg"; p_fmt c_magenta
-        p_trw "To configure the registry in Wine, run ";   p_fmt c_green; p_tln "mptwine regedit"; p_fmt c_magenta
-        p_trw "To manually configure Wine options, edit "; p_fmt c_cyan;  p_tln "${WINEPREFIX/~/"~"}/user.reg"; p_fmt c_magenta
+        p_tln "To configure basic Wine settings,  run " $C_GREEN "mptwine winecfg" $C_MAGENTA
+        p_tln "To configure the registry in Wine, run " $C_GREEN "mptwine regedit" $C_MAGENTA
+        p_tln "To manually configure Wine options, edit " $C_CYAN "${WINEPREFIX/~/"~"}/user.reg" $C_MAGENTA
         p_tln
         p_tln "You can choose whether to run the 32-bit or 64-bit OpenMPT executable"
-        p_trw "by passing "
-        p_fmt c_green; p_trw "MPTARCH=32"; p_fmt c_magenta
-        p_trw " or "
-        p_fmt c_green; p_trw "MPTARCH=64"; p_fmt c_magenta
-        p_tln " as an environment variable."
-        p_trw "Example: "; p_fmt c_green; p_tln "MPTARCH=32 openmpt"; p_fmt c_magenta
-        p_fmt f_unbold c_reset
+        p_tln "by passing " $C_GREEN "MPTARCH=32" $C_MAGENTA " or " $C_GREEN "MPTARCH=64" $C_MAGENTA " as an environment variable."
+        p_tln "Example: " $C_GREEN "MPTARCH=32 openmpt" $C_MAGENTA
+        p_trw $F_UNBOLD $F_RESET
     fi
 }
 
@@ -145,65 +123,119 @@ endmessage_uninstall() {
         [ $tr -lt 100  ] && time="0.0$tu"
         [ $tr -lt 10   ] && time="0.00$tu"
     fi
-    p_fmt f_bold c_cyan
+    p_tln $F_BOLD $C_CYAN
     p_tln "_______________________________________________"
     p_tln
-    p_fmt c_green
-    [ -z ${version+x} ] && p_tln "Successfully uninstalled OpenMPT." || p_tln "Successfully uninstalled OpenMPT $version."
-    p_fmt f_bold c_cyan
-    if ! [ -z ${time+x} ]; then
-        p_trw "Total time spent: "
-        p_fmt c_magenta
-        p_trw "$time"
-        p_fmt c_cyan
-        p_tln " seconds."
-    fi
+    p_tln $C_GREEN "Successfully installed OpenMPT $version." $C_CYAN
+    ! [ -z ${time+x} ] && p_tln "Total time spent: " $C_MAGENTA "$time" $C_CYAN " seconds."
 }
 
 quit() {
-    p_fmt f_unbold c_reset
-    p_tln
+    p_tln $F_UNBOLD $C_RESET
     rm -rf "$TMPDIR"
     exit $1
 }
 
 cancel() {
-    p_fmt f_unbold c_red
-    [ "$1" != "uninstall" ] && p_tln "Installation canceled." || p_tln "Uninstallation canceled."
-    p_fmt c_reset
+    p_trw $F_UNBOLD $C_RED
+    [ "$uninstall" != true ] && p_tln "Installation canceled." || p_tln "Uninstallation canceled."
+    p_trw $C_RESET
     quit 8
 }
 
-error_generic() {
-    p_fmt f_bold c_red
-    p_tln "An error occured."
-    p_fmt f_unbold c_reset
+error_deps() {
+    p_trw $F_BOLD $C_RED
+    p_tln "The following dependencies are not installed:"
+    for dep in "$@"; do p_tln $C_RED "* " $C_WHITE "$dep"; done
+    p_tln $C_RED "Please install them using your package manager, and run this script again."
+    p_trw $F_UNBOLD $C_RESET
 }
 
-error_internet_connection() {
-    p_fmt f_bold c_red
-    p_tln "Internet connection error."
-    p_fmt f_unbold c_reset
+error_oldsetup() {
+    p_trw $F_BOLD $C_RED
+    p_tln "OpenMPT has already been installed using the official installer."
+    p_tln "Migrating official installs is not implemented yet."
+    p_tln
+    p_tln "Please uninstall OpenMPT, and run this script again."
+    p_tln
+    p_tln
+    p_trw $F_UNBOLD $C_YELLOW
+    p_tln "After uninstalling, make sure that:"
+    p_tln
+    p_tln "* There are no desktop entries in " $C_CYAN "~/.local/share/applications/wine/OpenMPT" $C_YELLOW
+    p_tln "  and " $C_CYAN "~/.config/menus/applications-merged" $C_YELLOW "."
+    p_tln
+    p_tln "* There are no OpenMPT file associations in " $C_CYAN "~/.local/share/mime/packages" $C_YELLOW ","
+    p_tln "  such as " $C_CYAN "x-wine-extension-s3m.xml" $C_YELLOW "."
+    p_trw "  If there are any, delete them and run " $C_GREEN "update-mime-database ~/.local/share/mime" $C_YELLOW
+    p_trw $F_UNBOLD $C_RESET
 }
 
-error_server_response() {
-    p_fmt f_bold c_red
-    p_tln "Server issued an error. The file probably does not exist."
-    p_fmt f_unbold c_reset
+error() {
+    local status=$1
+    case $status in
+        1) p_tln $F_BOLD $C_RED "Invalid argument." $F_UNBOLD $C_RESET;;
+        2) error_deps "${@:2}";;
+        3) error_oldsetup;;
+        4) p_tln $F_BOLD $C_RED "Internet connection error." $F_UNBOLD $C_RESET;;
+        5) p_tln $F_BOLD $C_RED "Server issued an error. The file probably does not exist." $F_UNBOLD $C_RESET;;
+        *) p_tln $F_BOLD $C_RED "An error occured." $F_UNBOLD $C_RESET; status=127;
+    esac
+    quit $status
+}
+
+checkstatus_wget() {
+    local status=$1
+    [ $status -eq 0 ] && p_tln $F_BOLD $C_GREEN "DONE" $F_UNBOLD $C_RESET && return
+    p_tln $F_BOLD $C_RED "FAILED" $F_UNBOLD $C_RESET
+    rm "$2"
+    case $status in
+        8) error 5;;
+        *) error 4;;
+    esac
+}
+
+checkstatus_unzip() {
+    local status=$1
+    [ $status -eq 0 ] && p_tln $F_BOLD $C_GREEN "DONE" $F_UNBOLD $C_RESET && return
+    p_tln $F_BOLD $C_RED "FAILED" $F_UNBOLD $C_RESET
+    rm "$2"
+    case $status in
+        *) error 127;;
+    esac
+}
+
+checkstatus_cp() {
+    local status=$1
+    [ $status -eq 0 ] && p_tln $F_BOLD $C_GREEN "DONE" $F_UNBOLD $C_RESET && return
+    p_tln $F_BOLD $C_RED "FAILED" $F_UNBOLD $C_RESET
+    case $status in
+        *) error 127;;
+    esac
+}
+
+checkstatus_rm() {
+    local status=$1
+    [ $status -eq 0 ] && p_tln $F_BOLD $C_GREEN "DONE" $F_UNBOLD $C_RESET && return
+    p_tln $F_BOLD $C_RED "FAILED" $F_UNBOLD $C_RESET
+    case $status in
+        *) error 127;;
+    esac
+}
+
+download_file() {
+    wget -q -O "$1" "$2"
+    checkstatus_wget $? "$1"
+}
+
+unzip_file() {
+    unzip -q "$1" -d "$2"
+    checkstatus_unzip $? "$1"
 }
 
 get_update_file() {
-    p_fmt f_bold c_white
-    p_trw "Getting latest OpenMPT version number ($1 channel)..."
-    wget -q -O "$TMPDIR/version.json" "$URL_MPTAPI$1"
-    local status=$?
-    [ $status -eq 0 ] && p_fmt c_green && p_tln "DONE" && p_fmt f_unbold c_reset && return
-    p_fmt c_red && p_tln "FAILED" && p_fmt f_unbold c_reset
-    rm "$TMPDIR/version.json"
-    case $status in
-        8) error_server_response && quit 5;;
-        *) error_internet_connection && quit 4;;
-    esac
+    p_trw $F_BOLD $C_WHITE "Getting latest OpenMPT version number ($1 channel)..."
+    download_file "$TMPDIR/version.json" "$URL_MPTAPI$1"
 }
 
 get_latest_version() {
@@ -215,31 +247,13 @@ get_latest_version() {
 }
 
 download_32() {
-    p_fmt f_bold c_white
-    p_trw "Downloading OpenMPT $version (32-bit)..."
-    wget -q -O "$TMPDIR/mpt32.zip" "$url_download32"
-    local status=$?
-    [ $status -eq 0 ] && p_fmt c_green && p_tln "DONE" && p_fmt f_unbold c_reset && return
-    p_fmt c_red && p_tln "FAILED" && p_fmt f_unbold c_reset
-    rm "$TMPDIR/mpt32.zip"
-    case $status in
-        8) error_server_response && quit 5;;
-        *) error_internet_connection && quit 4;;
-    esac
+    p_trw $F_BOLD $C_WHITE "Downloading OpenMPT $version (32-bit)..."
+    download_file "$TMPDIR/mpt32.zip" "$url_download32"
 }
 
 download_64() {
-    p_fmt f_bold c_white
-    p_trw "Downloading OpenMPT $version (64-bit)..."
-    wget -q -O "$TMPDIR/mpt64.zip" "$url_download64"
-    local status=$?
-    [ $status -eq 0 ] && p_fmt c_green && p_tln "DONE" && p_fmt f_unbold c_reset && return
-    p_fmt c_red && p_tln "FAILED" && p_fmt f_unbold c_reset
-    rm "$TMPDIR/mpt64.zip"
-    case $status in
-        8) error_server_response && quit 5;;
-        *) error_internet_connection && quit 4;;
-    esac
+    p_trw $F_BOLD $C_WHITE "Downloading OpenMPT $version (64-bit)..."
+    download_file "$TMPDIR/mpt64.zip" "$url_download64"
 }
 
 download() {
@@ -248,30 +262,14 @@ download() {
 
 extract_32() {
     mkdir "$TMPDIR/mpt32"
-    p_fmt f_bold c_white
-    p_trw "Extracting OpenMPT $version (32-bit)..."
-    unzip -q "$TMPDIR/mpt32.zip" -d "$TMPDIR/mpt32"
-    local status=$?
-    [ $status -eq 0 ] && p_fmt c_green && p_tln "DONE" && p_fmt f_unbold c_reset && return
-    p_fmt c_red && p_tln "FAILED" && p_fmt f_unbold c_reset
-    rm -rf "$TMPDIR/mpt32"
-    case $status in
-        *) error_generic && quit 127;;
-    esac
+    p_trw $F_BOLD $C_WHITE "Extracting OpenMPT $version (32-bit)..."
+    unzip_file "$TMPDIR/mpt32.zip" "$TMPDIR/mpt32"
 }
 
 extract_64() {
     mkdir "$TMPDIR/mpt64"
-    p_fmt f_bold c_white
-    p_trw "Extracting OpenMPT $version (64-bit)..."
-    unzip -q "$TMPDIR/mpt64.zip" -d "$TMPDIR/mpt64"
-    local status=$?
-    [ $status -eq 0 ] && p_fmt c_green && p_tln "DONE" && p_fmt f_unbold c_reset && return
-    p_fmt c_red && p_tln "FAILED" && p_fmt f_unbold c_reset
-    rm -rf "$TMPDIR/mpt64"
-    case $status in
-        *) error_generic && quit 127;;
-    esac
+    p_trw $F_BOLD $C_WHITE "Extracting OpenMPT $version (64-bit)..."
+    unzip_file "$TMPDIR/mpt64.zip" "$TMPDIR/mpt64"
 }
 
 check_diff() {
@@ -303,12 +301,12 @@ handle_pluginbridge() {
 merge_common() {
     mkdir -p "$TMPDIR/mptcommon/bin/x86"
     mkdir -p "$TMPDIR/mptcommon/bin/amd64"
-    p_fmt f_bold c_white
-    p_trw "Merging common files..."
+    p_trw $F_BOLD $C_WHITE "Merging common files..."
     cd "$TMPDIR/mpt32"
     merge_common_recurse && cd "$SCRIPTDIR" && handle_pluginbridge &&
-    p_fmt c_green && p_tln "DONE" && p_fmt f_unbold c_reset && return
-    error_generic && quit 127
+    p_tln $F_BOLD $C_GREEN "DONE" $F_UNBOLD $C_RESET && return
+    p_tln $F_BOLD $C_RED "FAILED" $F_UNBOLD $C_RESET
+    error 127
 }
 
 prepare() {
@@ -319,103 +317,82 @@ prepare() {
 
 install_openmpt_files() {
     mkdir -p "$MPTDIR/resources"
-    p_fmt f_bold c_white
-    p_trw "Installing OpenMPT files..."
-    if cp -RT "$TMPDIR/mptcommon" "$MPTDIR/resources" ; then
-        p_fmt c_green && p_tln "DONE" && p_fmt f_unbold c_reset
-    else p_fmt c_red && p_tln "FAILED" && p_fmt f_unbold c_reset && stop 127; fi
+    p_trw $F_BOLD $C_WHITE "Installing OpenMPT files..."
+    cp -RT "$TMPDIR/mptcommon" "$MPTDIR/resources"
+    checkstatus_cp $?
     echo "$version" > "$MPTDIR/.mptver"
     echo "$channel" > "$MPTDIR/.mptchn"
 }
 
-install_icon() {
-    mkdir -p "$ICODIR/hicolor/256x256/apps"
-    wget -q -O "$ICODIR/hicolor/256x256/apps/openmpt.png" "$URL_MPTICON"
-}
-
 install_desktop_entry() {
     mkdir -p "$APPDIR"
-    p_fmt f_bold c_white
-    p_trw "Installing desktop entry..."
-    if cp "$SCRIPTDIR/resources/openmpt.desktop" "$APPDIR" && install_icon ; then
-        p_fmt c_green && p_tln "DONE" && p_fmt f_unbold c_reset
-    else p_fmt c_red && p_tln "FAILED" && p_fmt f_unbold c_reset && stop 127; fi
+    p_trw $F_BOLD $C_WHITE "Installing desktop entry..."
+    cp "$SCRIPTDIR/resources/openmpt.desktop" "$APPDIR"
+    checkstatus_cp $?
+}
+
+install_icon() {
+    mkdir -p "$ICODIR/hicolor/256x256/apps"
+    p_trw $F_BOLD $C_WHITE "Downloading icon for desktop entry..."
+    download_file "$ICODIR/hicolor/256x256/apps/openmpt.png" "$URL_MPTICON"
 }
 
 install_launch_script() {
     mkdir -p "$BINDIR"
-    p_fmt f_bold c_white
-    p_trw "Installing launch script..."
-    if cp "$SCRIPTDIR/resources/openmpt" "$BINDIR" && cp "$SCRIPTDIR/resources/mptwine" "$BINDIR" &&
-       chmod +x "$BINDIR/openmpt" && chmod +x "$BINDIR/mptwine" ; then
-       p_fmt c_green && p_tln "DONE" && p_fmt f_unbold c_reset
-    else p_fmt c_red && p_tln "FAILED" && p_fmt f_unbold c_reset && stop 127; fi
+    p_trw $F_BOLD $C_WHITE "Installing launch script..."
+    cp "$SCRIPTDIR/resources/openmpt" "$BINDIR" && cp "$SCRIPTDIR/resources/mptwine" "$BINDIR"
+    checkstatus_cp $?
+    chmod +x "$BINDIR/openmpt" && chmod +x "$BINDIR/mptwine"
 }
 
 configure_wine() {
-    p_fmt f_bold c_white
-    p_trw "Configuring Wine..."
+    p_trw $F_BOLD $C_WHITE "Configuring Wine..."
     wine chcp &>/dev/null
-    p_fmt c_green && p_tln "DONE" && p_fmt f_unbold c_reset
+    p_tln $F_BOLD $C_GREEN "DONE" $F_UNBOLD $C_RESET
 }
 
 uninstall_openmpt_files() {
-    p_fmt f_bold c_white
-    p_trw "Uninstalling OpenMPT files..."
-    if rm -rf "$MPTDIR/resources" "$MPTDIR/.mptver" "$MPTDIR/.mptchn"
-    then p_fmt c_green && p_tln "DONE" && p_fmt f_unbold c_reset
-    else p_fmt c_red && p_tln "FAILED" && p_fmt f_unbold c_reset && stop 127; fi
-}
-
-uninstall_icon() {
-    rm "$ICODIR/hicolor/256x256/apps/openmpt.png"
+    p_trw $F_BOLD $C_WHITE "Uninstalling OpenMPT files..."
+    rm -rf "$MPTDIR/resources" "$MPTDIR/.mptver" "$MPTDIR/.mptchn"
+    checkstatus_rm $?
 }
 
 uninstall_desktop_entry() {
-    p_fmt f_bold c_white
-    p_trw "Uninstalling desktop entry..."
-    if rm "$APPDIR/openmpt.desktop" && uninstall_icon
-    then p_fmt c_green && p_tln "DONE" && p_fmt f_unbold c_reset
-    else p_fmt c_red && p_tln "FAILED" && p_fmt f_unbold c_reset && stop 127; fi
+    p_trw $F_BOLD $C_WHITE "Uninstalling desktop entry..."
+    rm "$APPDIR/openmpt.desktop"
+    checkstatus_rm $?
+}
+
+uninstall_icon() {
+    p_trw $F_BOLD $C_WHITE "Uninstalling desktop icon..."
+    rm "$ICODIR/hicolor/256x256/apps/openmpt.png"
+    checkstatus_rm $?
 }
 
 uninstall_launch_script() {
-    p_fmt f_bold c_white
-    p_trw "Uninstalling launch script..."
-    if rm "$BINDIR/openmpt" && rm "$BINDIR/mptwine"
-    then p_fmt c_green && p_tln "DONE" && p_fmt f_unbold c_reset
-    else p_fmt c_red && p_tln "FAILED" && p_fmt f_unbold c_reset && stop 127; fi
+    p_trw $F_BOLD $C_WHITE "Uninstalling launch script..."
+    rm "$BINDIR/openmpt" && rm "$BINDIR/mptwine"
+    checkstatus_rm $?
 }
 
 uninstall_wine_files() {
-    p_fmt f_bold c_white
-    p_trw "Uninstalling Wine files..."
-    if rm -rf "$MPTDIR/wine"
-    then p_fmt c_green && p_tln "DONE" && p_fmt f_unbold c_reset
-    else p_fmt c_red && p_tln "FAILED" && p_fmt f_unbold c_reset && stop 127; fi
+    p_trw $F_BOLD $C_WHITE "Uninstalling Wine files..."
+    rm -rf "$MPTDIR/wine"
+    checkstatus_rm $?
 }
 
 show_usage() {
-    p_fmt f_bold c_cyan;    p_tln "Usage:"
-    p_fmt f_bold c_magenta; p_trw "To install:   "; p_fmt f_unbold c_green; p_trw "$SCRIPT "; p_fmt c_cyan; p_tln "[channel]"; p_fmt c_reset
-    p_fmt f_bold c_magenta; p_trw "To uninstall: "; p_fmt f_unbold c_green; p_trw "$SCRIPT ";               p_tln "uninstall"; p_fmt c_reset
+    p_tln $F_BOLD $C_CYAN    "Usage:"
+    p_tln $F_BOLD $C_MAGENTA "To install:   " $F_UNBOLD $C_GREEN "$SCRIPT " $C_CYAN "[channel]" $C_RESET
+    p_tln $F_BOLD $C_MAGENTA "To uninstall: " $F_UNBOLD $C_GREEN "$SCRIPT "         "uninstall" $C_RESET
     p_tln
-    p_fmt f_bold c_cyan;    p_trw "Example:      "; p_fmt f_unbold c_green; p_trw "$SCRIPT ";               p_tln "development"; p_fmt c_reset
+    p_tln $F_BOLD $C_CYAN    "Example:      " $F_UNBOLD $C_GREEN "$SCRIPT "         "development" $C_RESET
     p_tln
     p_tln "The download channel can be one of the following:"
-    p_fmt c_green;  p_tln "'release':     current stable release."
-    p_fmt c_yellow; p_tln "'next':        preview of the next minor update."
-    p_fmt c_red;    p_tln "'development': preview of the next major update."
-    p_fmt c_reset;
-}
-
-error_deps() {
-    p_fmt f_bold c_red
-    p_tln "The following dependencies are not installed:"
-    for dep in "$@"; do p_fmt c_red; p_trw "* "; p_fmt c_white; p_tln "$dep"; done
-    p_fmt c_red
-    p_tln "Please install them using your package manager, and run this script again."
-    p_fmt f_unbold c_reset
+    p_tln $C_GREEN  "'release':     current stable release."
+    p_tln $C_YELLOW "'next':        preview of the next minor update."
+    p_tln $C_RED    "'development': preview of the next major update."
+    p_trw $C_RESET
 }
 
 check_deps() {
@@ -428,23 +405,23 @@ check_deps() {
         esac
         ! command -v "$depexec" &>/dev/null && missingdeps+=("$dep")
     done
-    [ ${#missingdeps} -gt 0 ] && error_deps "${missingdeps[@]}" && quit 2
+    [ ${#missingdeps} -gt 0 ] && error 2 "${missingdeps[@]}"
 }
 
 check_uninstall() {
     local message="You are about to uninstall OpenMPT. Continue?"
     [ -f "$MPTDIR/.mptver" ] && version="$(< "$MPTDIR/.mptver")" && message="You are about to uninstall OpenMPT $version. Continue?"
-    p_fmt f_bold c_yellow
+    p_trw $F_BOLD $C_YELLOW
     if ! [ -d "$MPTDIR/resources" ] && ! [ -d "$MPTDIR/wine" ] && ! [ -f "$APPDIR/openmpt.desktop" ] && ! [ -f "$BINDIR/openmpt" ]; then
         p_tln "OpenMPT is not installed."
         quit
     fi
-    p_trw "$message"; p_fmt f_unbold c_reset; p_trw " (Y/n) "
+    p_trw "$message" $F_UNBOLD $C_RESET " (Y/n) "
     read response
     case $response in
         [Yy]|'') ;;
-        [Nn])    cancel uninstall;;
-        *)       p_fmt c_red && p_trw "Invalid response. " && cancel uninstall;;
+        [Nn])    cancel;;
+        *)       p_trw $C_RED "Invalid response. " && cancel;;
     esac
     p_tln
 }
@@ -452,74 +429,37 @@ check_uninstall() {
 check_arg() {
     [ "$1" = "" ] && show_usage && quit
     [ "$1" = "uninstall" ] && uninstall=true && return
-    [ "$1" != "release" ] && [ "$1" != "next" ] && [ "$1" != "development" ] && show_usage && quit 1
+    [ "$1" != "release" ] && [ "$1" != "next" ] && [ "$1" != "development" ] && show_usage && error 1
     channel="$1"
-}
-
-error_oldsetup() {
-    p_fmt f_bold c_red
-    p_tln "OpenMPT has already been installed using the official installer."
-    p_tln "Migrating official installs is not implemented yet."
-    p_tln
-    p_tln "Please uninstall OpenMPT, and run this script again."
-    p_tln
-    p_tln
-    p_fmt f_unbold c_yellow
-    p_tln "After uninstalling, make sure that:"
-    p_tln
-    p_trw "* There are no desktop entries in "
-    p_fmt c_cyan; p_tln "~/.local/share/applications/wine/OpenMPT"; p_fmt c_yellow
-    p_trw "  and "
-    p_fmt c_cyan; p_trw "~/.config/menus/applications-merged"; p_fmt c_yellow
-    p_tln "."
-    p_tln
-    p_trw "* There are no OpenMPT file associations in "; p_fmt c_yellow
-    p_fmt c_cyan; p_trw "~/.local/share/mime/packages"; p_fmt c_yellow
-    p_tln ","
-    p_trw "  such as "
-    p_fmt c_cyan; p_trw "x-wine-extension-s3m.xml"; p_fmt c_yellow
-    p_tln "."
-    p_trw "  If there are any, delete them and run "
-    p_fmt c_cyan; p_tln "update-mime-database ~/.local/share/mime"; p_fmt c_yellow
-    p_fmt f_unbold c_reset
 }
 
 check_oldsetup() {
     [ -d ~/.local/share/applications/wine/Programs/OpenMPT ] ||
     ls ~/.config/menus/applications-merged/wine-Programs-OpenMPT-* 1> /dev/null 2>&1 &&
-    error_oldsetup && quit 3
+    error 3
     for DRIVE in {a..z}; do
         [ -f ~/.wine/drive_${DRIVE}/Program\ Files/OpenMPT/bin/x86/OpenMPT.exe   ] ||
         [ -f ~/.wine/drive_${DRIVE}/Program\ Files/OpenMPT/bin/amd64/OpenMPT.exe ] ||
         [ -f ~/.wine/drive_${DRIVE}/Program\ Files/OpenMPT/OpenMPT.exe           ] ||
         [ -f ~/.wine/drive_${DRIVE}/Program\ Files\ \(x86\)/OpenMPT/OpenMPT.exe  ] &&
-        error_oldsetup && quit 3;
+        error 3;
     done
 }
 
 get_resource() {
-    p_fmt f_bold c_white
-    p_trw "Downloading file..."
-    wget -q -O "$SCRIPTDIR/resources/$1" "$URL_SCRIPTRESOURCES$1"
-    local status=$?
-    [ $status -eq 0 ] && p_fmt c_green && p_tln "DONE" && p_fmt f_unbold c_reset && return
-    p_fmt c_red && p_tln "FAILED" && p_fmt f_unbold c_reset
-    rm "$SCRIPTDIR/resources/$1"
-    case $status in
-        8) error_server_response && quit 5;;
-        *) error_internet_connection && quit 4;;
-    esac
+    p_trw $F_BOLD $C_WHITE "Downloading file..."
+    download_file "$SCRIPTDIR/resources/$1" "$URL_SCRIPTRESOURCES$1"
 }
 
 prompt_resource() {
-    p_fmt c_yellow
-    p_trw "File '"; p_fmt c_cyan; p_trw "$1"; p_fmt c_yellow; p_tln "' not found."
-    p_trw "Do you want to download it from the GitHub repo?"; p_fmt c_reset; p_trw " (Y/n) "
+    p_trw $C_YELLOW
+    p_tln "File '" $C_CYAN "$1" $C_YELLOW "' not found."
+    p_trw "Do you want to download it from the GitHub repo?" $F_UNBOLD $C_RESET " (Y/n) "
     read response
     case $response in
         [Yy]|'') get_resource "$1";;
         [Nn])    cancel;;
-        *)       p_fmt c_red && p_trw "Invalid response. " && cancel;;
+        *)       p_trw $C_RED "Invalid response. " && cancel;;
     esac
 }
 
@@ -534,16 +474,13 @@ check_resources() {
 
 check_install() {
     local message="You are about to install OpenMPT $version. Continue?"
-    p_fmt f_bold c_yellow
-    p_tln
+    p_tln $F_BOLD $C_YELLOW
     p_tln "This script installs OpenMPT for the current user only."
     p_tln "If anyone else on this computer wants to have OpenMPT installed,"
     p_tln "they should run this script on their account as well."
     p_tln
     if ! [[ ":$PATH:" == *":$HOME/.local/bin:"* ]]; then
-        p_fmt f_bold c_yellow; p_trw "You do not seem to have "
-        p_fmt f_unbold c_cyan; p_trw "~/.local/bin"
-        p_fmt f_bold c_yellow; p_tln " added to your PATH environment variable."
+        p_tln $F_BOLD $C_YELLOW "You do not seem to have " $F_UNBOLD $C_CYAN "~/.local/bin" $F_BOLD $C_YELLOW " added to your PATH environment variable."
         p_tln "It is recommended to stop the script, add it, and run the script again."
         p_tln
     fi
@@ -565,12 +502,12 @@ check_install() {
             p_tln "The currently installed version is $(< "$MPTDIR/.mptver")."
         fi
     fi
-    p_trw "$message"; p_fmt f_unbold c_reset; p_trw " (Y/n) "
+    p_trw "$message" $F_UNBOLD $C_RESET " (Y/n) "
     read response
     case $response in
         [Yy]|'') ;;
         [Nn])    cancel;;
-        *)       p_fmt c_red && p_trw "Invalid response. " && cancel;;
+        *)       p_trw $C_RED "Invalid response. " && cancel;;
     esac
     p_tln
 }
@@ -596,6 +533,7 @@ if [ "$uninstall" = true ]; then
     get_start_time
     uninstall_openmpt_files
     uninstall_desktop_entry
+    uninstall_icon
     uninstall_launch_script
     uninstall_wine_files
     get_end_time
@@ -610,6 +548,7 @@ else
     prepare
     install_openmpt_files
     install_desktop_entry
+    install_icon
     install_launch_script
     configure_wine
     get_end_time
