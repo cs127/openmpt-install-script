@@ -1,14 +1,14 @@
 #!/usr/bin/bash
 
 # cs127's OpenMPT install/update script for Linux
-# version 0.0.5
+# version 0.0.6
 
 # https://cs127.github.io
 
 
 
-SCRIPTVER=0.0.5
-DEPS=("wine" "wget" "jq" "unzip")
+SCRIPTVER=0.0.6
+DEPS=("wine" "curl" "jq" "unzip")
 
 URL_SCRIPTRESOURCES="https://github.com/cs127/openmpt-install-script/raw/master/resources/"
 URL_MPTAPI="https://update.openmpt.org/api/v3/update/"
@@ -178,9 +178,9 @@ error() {
         1) p_tln $F_BOLD $C_RED "Invalid argument." $F_UNBOLD $C_RESET;;
         2) error_deps "${@:2}";;
         3) error_oldsetup;;
-        4) p_tln $F_BOLD $C_RED "Internet connection error." $F_UNBOLD $C_RESET;;
+        4) p_tln $F_BOLD $C_RED "Connection error." $F_UNBOLD $C_RESET;;
         5) p_tln $F_BOLD $C_RED "Server issued an error. The file probably does not exist." $F_UNBOLD $C_RESET;;
-        6) p_tln $F_BOLD $C_RED "File I/O error.";;
+        6) p_tln $F_BOLD $C_RED "Unable to write file.";;
         7) p_tln $F_BOLD $C_RED "Corrupted file.";;
         8) p_tln $F_BOLD $C_RED "Unable to allocate enough memory.";;
         9) p_tln $F_BOLD $C_RED "Not enough disk space.";;
@@ -189,16 +189,18 @@ error() {
     quit $status
 }
 
-checkstatus_wget() {
+checkstatus_curl() {
     local status=$1
     [ $status -eq 0 ] && p_tln $F_BOLD $C_GREEN "DONE" $F_UNBOLD $C_RESET && return
     p_tln $F_BOLD $C_RED "FAILED" $F_UNBOLD $C_RESET
     rm "$2"
     case $status in
-        4|5|6|7) error 4;;
-        8)       error 5;;
-        3)       error 6;;
-        *)       error 127;;
+        5|6|7|28|35|55|56) error 4;;
+        22)                error 5;;
+        23)                error 6;;
+        18)                error 7;;
+        27)                error 8;;
+        *)                 error 127;;
     esac
 }
 
@@ -230,8 +232,8 @@ checkstatus_rm() {
 }
 
 download_file() {
-    wget -q -O "$1" "$2"
-    checkstatus_wget $? "$1"
+    curl -s "$1" -o "$2"
+    checkstatus_curl $? "$2"
 }
 
 unzip_file() {
@@ -241,7 +243,7 @@ unzip_file() {
 
 get_update_file() {
     p_trw $F_BOLD $C_WHITE "Getting latest OpenMPT version number ($1 channel)..."
-    download_file "$TMPDIR/version.json" "$URL_MPTAPI$1"
+    download_file "$URL_MPTAPI$1" "$TMPDIR/version.json"
 }
 
 get_latest_version() {
@@ -254,12 +256,12 @@ get_latest_version() {
 
 download_32() {
     p_trw $F_BOLD $C_WHITE "Downloading OpenMPT $version (32-bit)..."
-    download_file "$TMPDIR/mpt32.zip" "$url_download32"
+    download_file "$url_download32" "$TMPDIR/mpt32.zip"
 }
 
 download_64() {
     p_trw $F_BOLD $C_WHITE "Downloading OpenMPT $version (64-bit)..."
-    download_file "$TMPDIR/mpt64.zip" "$url_download64"
+    download_file "$url_download64" "$TMPDIR/mpt64.zip"
 }
 
 download() {
@@ -340,7 +342,7 @@ install_desktop_entry() {
 install_icon() {
     mkdir -p "$ICODIR/hicolor/256x256/apps"
     p_trw $F_BOLD $C_WHITE "Downloading icon for desktop entry..."
-    download_file "$ICODIR/hicolor/256x256/apps/openmpt.png" "$URL_MPTICON"
+    download_file "$URL_MPTICON" "$ICODIR/hicolor/256x256/apps/openmpt.png"
 }
 
 install_launch_script() {
@@ -454,7 +456,7 @@ check_oldsetup() {
 
 get_resource() {
     p_trw $F_BOLD $C_WHITE "Downloading file..."
-    download_file "$SCRIPTDIR/resources/$1" "$URL_SCRIPTRESOURCES$1"
+    download_file "$URL_SCRIPTRESOURCES$1" "$SCRIPTDIR/resources/$1"
 }
 
 prompt_resource() {
