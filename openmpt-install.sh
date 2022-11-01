@@ -1,13 +1,13 @@
 #!/usr/bin/bash
 
 # cs127's OpenMPT install/update script for Linux
-# version 0.0.4
+# version 0.0.5
 
 # https://cs127.github.io
 
 
 
-SCRIPTVER=0.0.4
+SCRIPTVER=0.0.5
 DEPS=("wine" "wget" "jq" "unzip")
 
 URL_SCRIPTRESOURCES="https://github.com/cs127/openmpt-install-script/raw/master/resources/"
@@ -94,6 +94,7 @@ endmessage() {
         p_tln $C_CYAN "64-bit exe:         " $C_MAGENTA "${MPTDIR/~/"~"}/resources/bin/amd64/OpenMPT.exe"
         p_tln $C_CYAN "Wine directory:     " $C_MAGENTA "${WINEPREFIX/~/"~"}"
         p_tln $C_CYAN "Desktop entry:      " $C_MAGENTA "${APPDIR/~/"~"}/openmpt.desktop"
+        p_tln $C_CYAN "Desktop icon:       " $C_MAGENTA "${ICODIR/~/"~"}/hicolor/256x256/apps/openmpt.png"
         p_tln $C_CYAN "Launch script:      " $C_MAGENTA "${BINDIR/~/"~"}/openmpt"
         p_tln $C_CYAN "Wine launch script: " $C_MAGENTA "${BINDIR/~/"~"}/mptwine"
         p_tln $F_UNBOLD $C_MAGENTA
@@ -183,7 +184,7 @@ error() {
         7) p_tln $F_BOLD $C_RED "Corrupted file.";;
         8) p_tln $F_BOLD $C_RED "Unable to allocate enough memory.";;
         9) p_tln $F_BOLD $C_RED "Not enough disk space.";;
-        *) p_tln $F_BOLD $C_RED "An error occured." $F_UNBOLD $C_RESET; status=127;
+        *) p_tln $F_BOLD $C_RED "An error occured." $F_UNBOLD $C_RESET; status=127;;
     esac
     quit $status
 }
