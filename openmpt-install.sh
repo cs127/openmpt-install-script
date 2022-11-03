@@ -111,7 +111,7 @@ endmessage() {
         p_ln
         p_ln "If you have " $C_CYAN "${BINDIR/~/"~"}" $C_MAGENTA " in your PATH environment variable,"
         p_ln "you can run " $C_GREEN "openmpt" $C_MAGENTA " from the command line, and use " $C_GREEN "mptwine" $C_MAGENTA " as described below."
-        p_lr
+        p_ln
         p_ln "To run a Wine program with OpenMPT's Wine directory, use " $C_GREEN "mptwine" $C_MAGENTA
         p_ln "Example: " $C_GREEN "mptwine cmd.exe" $C_MAGENTA
         p_ln
