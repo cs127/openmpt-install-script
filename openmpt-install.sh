@@ -1,13 +1,13 @@
 #!/usr/bin/bash
 
 # cs127's OpenMPT install/update script for Linux
-# version 0.1.0
+# version 0.1.1
 
 # https://cs127.github.io
 
 
 
-SCRIPTVER=0.1.0
+SCRIPTVER=0.1.1
 DEPS=("wine" "curl" "jq" "unzip")
 
 URL_SCRIPTRESOURCES="https://github.com/cs127/openmpt-install-script/raw/master/resources/"
@@ -107,8 +107,13 @@ endmessage() {
         p_ln "You can now launch OpenMPT from your application menu."
         p_ln "Associating file types with it are also possible."
         p_ln
+        p_ln "To update OpenMPT to a newer version, simply run this script and install OpenMPT again."
+        p_ln
         p_ln "If you have " $C_CYAN "${BINDIR/~/"~"}" $C_MAGENTA " in your PATH environment variable,"
         p_ln "you can run " $C_GREEN "openmpt" $C_MAGENTA " from the command line, and use " $C_GREEN "mptwine" $C_MAGENTA " as described below."
+        p_lr
+        p_ln "To run a Wine program with OpenMPT's Wine directory, use " $C_GREEN "mptwine" $C_MAGENTA
+        p_ln "Example: " $C_GREEN "mptwine cmd.exe" $C_MAGENTA
         p_ln
         p_ln "To configure basic Wine settings,  run " $C_GREEN "mptwine winecfg" $C_MAGENTA
         p_ln "To configure the registry in Wine, run " $C_GREEN "mptwine regedit" $C_MAGENTA
@@ -338,6 +343,7 @@ install_launch_script() {
 configure_wine() {
     p_rw $F_BOLD $C_WHITE "Configuring Wine..."
     wine chcp &>/dev/null
+    wine regedit "$SCRIPTDIR/resources/wine_config.reg" &>/dev/null
     p_ln $F_BOLD $C_GREEN "DONE" $F_UNBOLD $C_RESET
 }
 
@@ -570,7 +576,7 @@ else
     install_desktop_entry
     install_icon
     install_launch_script
-    configure_wine
+    ! [ -f "$WINEPREFIX/system.reg" ] || ! [ -f "$WINEPREFIX/user.reg" ] && configure_wine
     ! [ -z "$oldconfigdrive" ] && migrate_old_config
     get_end_time
 fi
