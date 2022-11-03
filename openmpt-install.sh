@@ -1,20 +1,20 @@
 #!/usr/bin/bash
 
 # cs127's OpenMPT install/update script for Linux
-# version 0.1.1
+# version 0.1.2
 
 # https://cs127.github.io
 
 
 
-SCRIPTVER=0.1.1
+SCRIPTVER=0.1.2
 DEPS=("wine" "curl" "jq" "unzip")
 
 URL_SCRIPTRESOURCES="https://github.com/cs127/openmpt-install-script/raw/master/resources/"
 URL_MPTAPI="https://update.openmpt.org/api/v3/update/"
 URL_MPTICON="https://openmpt.org/img/logo256.png"
 
-RESOURCES=("openmpt.desktop" "openmpt" "mptwine")
+RESOURCES=("openmpt.desktop" "openmpt" "mptwine" "wine_config.reg")
 MPTDIR=$HOME/.openmpt
 TMPDIR=$(mktemp -d)
 BINDIR=$HOME/.local/bin
