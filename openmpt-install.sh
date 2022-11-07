@@ -1,13 +1,13 @@
 #!/usr/bin/bash
 
 # cs127's OpenMPT install/update script for Linux
-# version 0.1.2
+# version 0.1.3
 
 # https://cs127.github.io
 
 
 
-SCRIPTVER=0.1.2
+SCRIPTVER=0.1.3
 DEPS=("wine" "curl" "jq" "unzip")
 
 URL_SCRIPTRESOURCES="https://github.com/cs127/openmpt-install-script/raw/master/resources/"
@@ -342,7 +342,6 @@ install_launch_script() {
 
 configure_wine() {
     p_rw $F_BOLD $C_WHITE "Configuring Wine..."
-    wine chcp &>/dev/null
     wine regedit "$SCRIPTDIR/resources/wine_config.reg" &>/dev/null
     p_ln $F_BOLD $C_GREEN "DONE" $F_UNBOLD $C_RESET
 }
@@ -404,14 +403,7 @@ show_usage() {
 
 check_deps() {
     local missingdeps=()
-    local depexec=""
-    for DEP in "$@"; do
-        case $DEP in
-            imagemagick) depexec="convert";;
-            *)           depexec="$DEP";;
-        esac
-        ! command -v "$depexec" &>/dev/null && missingdeps+=("$DEP")
-    done
+    for DEP in "$@"; do ! command -v "$DEP" &>/dev/null && missingdeps+=("$DEP"); done
     [ ${#missingdeps} -gt 0 ] && error 2 "${missingdeps[@]}"
 }
 
