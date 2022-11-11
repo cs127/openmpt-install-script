@@ -1,13 +1,13 @@
 #!/usr/bin/bash
 
 # cs127's OpenMPT install/update script for Linux
-# version 0.1.3
+# version 0.1.4
 
 # https://cs127.github.io
 
 
 
-SCRIPTVER=0.1.3
+SCRIPTVER=0.1.4
 DEPS=("wine" "curl" "jq" "unzip")
 
 URL_SCRIPTRESOURCES="https://github.com/cs127/openmpt-install-script/raw/master/resources/"
@@ -187,7 +187,7 @@ checkstatus_curl() {
     local status=$1
     [ $status -eq 0 ] && p_ln $F_BOLD $C_GREEN "DONE" $F_UNBOLD $C_RESET && return
     p_ln $F_BOLD $C_RED "FAILED" $F_UNBOLD $C_RESET
-    rm "$2"
+    [ -f "$2" ] && rm "$2"
     case $status in
         5|6|7|28|35|55|56) error 4;;
         22)                error 5;;
@@ -492,27 +492,30 @@ check_resources() {
 
 check_install() {
     local message="You are about to install OpenMPT $version. Continue?"
+    [ -f "$MPTDIR/.mptver" ] && existingversion=true
     p_ln $F_BOLD $C_YELLOW
-    p_ln "This script installs OpenMPT for the current user only."
-    p_ln "If anyone else on this computer wants to have OpenMPT installed,"
-    p_ln "they should run this script on their account as well."
-    p_ln
     if ! [[ ":$PATH:" == *":$HOME/.local/bin:"* ]]; then
         p_ln $F_BOLD $C_YELLOW "You do not seem to have " $F_UNBOLD $C_CYAN "~/.local/bin" $F_BOLD $C_YELLOW " added to your PATH environment variable."
         p_ln "It is recommended to stop the script, add it, and run the script again."
         p_ln
     fi
-    [ -f "$MPTDIR/.mptver" ] || [ -f "$MPTDIR/.mptchn" ] && existingversion=true && p_ln "Existing OpenMPT install found."
     if [ -f "$MPTDIR/.mptchn" ] && [ "$(< "$MPTDIR/.mptchn")" = "development" ] && [ "$channel" != "development" ]; then
-        p_ln
         p_ln "WARNING:"
         p_ln "The currently installed version of OpenMPT is a development version,"
         p_ln "but the version you are about to install is a stable release."
         p_ln "Only continue the installation if the version you are about to install"
-        p_ln "has a higher version number than the one currently installed."
+        p_ln "has a higher version (NOT revision) number than the one currently installed."
         p_ln "Otherwise, please stop the script and run it again with the"
         p_ln "development channel instead."
         p_ln
+    fi
+    if [ "$existingversion" != true ]; then
+        p_ln "This script installs OpenMPT for the current user only."
+        p_ln "If anyone else on this computer wants to have OpenMPT installed,"
+        p_ln "they should run this script on their account as well."
+        p_ln
+    else
+        p_ln "Existing OpenMPT install found."
     fi
     if [ -f "$MPTDIR/.mptver" ]; then
         if [ "$(< "$MPTDIR/.mptver")" = "$version" ]; then message="You already have OpenMPT $version installed. Install anyway?"
