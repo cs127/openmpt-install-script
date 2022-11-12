@@ -1,13 +1,13 @@
 #!/usr/bin/bash
 
 # cs127's OpenMPT install/update script for Linux
-# version 0.1.4
+# version 0.1.5
 
 # https://cs127.github.io
 
 
 
-SCRIPTVER=0.1.4
+SCRIPTVER=0.1.5
 DEPS=("wine" "curl" "jq" "unzip")
 
 URL_SCRIPTRESOURCES="https://github.com/cs127/openmpt-install-script/raw/master/resources/"
@@ -448,7 +448,7 @@ check_oldsetup_installed() {
 prompt_oldsetup_config() {
     p_rw $F_UNBOLD $C_YELLOW
     p_ln "OpenMPT settings detected in default Wine directory (" $C_CYAN "~/.wine" $C_YELLOW ")."
-    p_rw "Do you want to migrate your those settings to this install?" $F_UNBOLD $C_RESET " (Y/n) "
+    p_rw "Do you want to migrate those settings to this install?" $F_UNBOLD $C_RESET " (Y/n) "
     read response
     case $response in
         [Yy]|'') oldconfigdrive="$1";;
