@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # cs127's OpenMPT launch script for Linux
-# version 0.1.0
+# version 0.2.0
 
 # https://cs127.github.io
 
@@ -24,8 +24,8 @@ files=()
 args=""
 
 # Set Wine options
-MPTDIR=~/.openmpt
-export WINEPREFIX=$MPTDIR/wine
+MPTDIR=/opt/openmpt
+export WINEPREFIX=$HOME/.wine-openmpt
 export WINEDEBUG=-all
 
 # Detect architecture
@@ -58,4 +58,4 @@ done
 
 # Launch OpenMPT.
 [ "$MPTARCH" = "64" ] && MPTARCHDIR=amd64 || MPTARCHDIR=x86
-wine $MPTDIR/resources/bin/$MPTARCHDIR/OpenMPT.exe $args "${files[@]}"
+wine $MPTDIR/bin/$MPTARCHDIR/OpenMPT.exe $args "${files[@]}"

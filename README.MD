@@ -12,20 +12,27 @@ It also creates a desktop entry that can be accessed through your application me
 ```bash
 sudo pacman -S git
 ```
-* Clone the repository
+* Clone the repository to a directory where you want the script to be stored. I will choose `~/.mptinst` as an example.
 ```bash
-git clone https://github.com/cs127/openmpt-install-script.git
-cd openmpt-install-script
+git clone https://github.com/cs127/openmpt-install-script.git ~/.mptinst
+```
+
+When a newer version of the script is released, you can update by going to the script directory (`~/.mptinst` in my case) and pulling the repository:
+```bash
+cd ~/.mptinst
+git pull
 ```
 
 In case you can't clone the repository, you can just download the script
 ([openmpt-install.sh](https://raw.githubusercontent.com/cs127/openmpt-install-script/master/openmpt-install.sh))
-by itself.
-
-It will automatically download the rest of the files in the repository after you run it.
+by itself. It will automatically download the rest of the files in the repository after you run it.
 
 ### Run the script
 
+* Go to the script's directory (e.g. `~/.mptinst`)
+```bash
+cd ~/.mptinst
+```
 * Make the script executable.
 ```bash
 chmod +x openmpt-install.sh
@@ -42,6 +49,8 @@ The download channel can be one of the following:
 * `release`: current stable release.
 * `next`: preview of the next minor update.
 * `development`: preview of the next major update.
+
+To update OpenMPT, simply run the script again.
 
 For command-line arguments of OpenMPT, read the comments in the beginning of the
 [launch script](https://github.com/cs127/openmpt-install-script/blob/master/resources/openmpt).

@@ -1,27 +1,35 @@
 #!/usr/bin/bash
 
 # cs127's OpenMPT install/update script for Linux
-# version 0.1.5
+# version 0.2.0
 
 # https://cs127.github.io
 
 
 
-SCRIPTVER=0.1.5
-DEPS=("wine" "curl" "jq" "unzip")
+SCRIPTVER=0.2.0
+DEPS_COMMON=("sudo")
+DEPS_INSTALL=("wine" "curl" "jq" "unzip")
+DEPS_UNINSTALL=()
 
 URL_SCRIPTRESOURCES="https://github.com/cs127/openmpt-install-script/raw/master/resources/"
 URL_MPTAPI="https://update.openmpt.org/api/v3/update/"
 URL_MPTICON="https://openmpt.org/img/logo256.png"
 
 RESOURCES=("openmpt.desktop" "openmpt" "mptwine" "wine_config.reg")
-MPTDIR=$HOME/.openmpt
-TMPDIR=$(mktemp -d)
-BINDIR=$HOME/.local/bin
-APPDIR=$HOME/.local/share/applications
-ICODIR=$HOME/.local/share/icons
 
-export WINEPREFIX=$MPTDIR/wine
+MPTDIR=/opt/openmpt
+TMPDIR=$(mktemp -d)
+BINDIR=/usr/bin
+APPDIR=/usr/share/applications
+ICODIR=/usr/share/icons
+
+MPTDIR_L=$HOME/.openmpt
+BINDIR_L=$HOME/.local/bin
+APPDIR_L=$HOME/.local/share/applications
+ICODIR_L=$HOME/.local/share/icons
+
+export WINEPREFIX=$HOME/.wine-openmpt
 export WINEDEBUG=-all
 
 WINEAPPDATA=$WINEPREFIX/drive_c/users/$USER/AppData/Roaming
@@ -40,6 +48,7 @@ url_download64=""
 
 start_time=""
 end_time=""
+time=""
 
 
 
@@ -58,16 +67,15 @@ C_RESET='\e[39m'
 
 
 
-p_rw() {
-    for ARG in "$@"; do echo -ne "$ARG"; done
-}
+p_rw() { for ARG in "$@"; do echo -ne "$ARG"; done; }
 
-p_ln() {
-    p_rw "$@" "\n"
-}
+p_ln() { p_rw "$@" "\n"; }
+
+initialize() { clear; cd "$SCRIPTDIR"; }
+
+refresh_sudo() { sudo -v && return; cancel; }
 
 startmessage() {
-    cd "$SCRIPTDIR"
     p_ln $F_BOLD $C_CYAN
     p_ln "cs127's OpenMPT install/update script for Linux"
     p_ln "version $SCRIPTVER"
@@ -77,14 +85,8 @@ startmessage() {
 }
 
 endmessage() {
-    local time=""
-    if ! [ -z "$start_time" ] && ! [ -z "$end_time" ] ; then
-        local tr="$(($end_time-$start_time))"
-        local tu="$(sed 's/...$/.&/' <<< $tr)"; time="$tu"
-        [ $tr -lt 1000 ] && time="0$tu"
-        [ $tr -lt 100  ] && time="0.0$tu"
-        [ $tr -lt 10   ] && time="0.00$tu"
-    fi
+    ! [ -z "$start_time" ] && ! [ -z "$end_time" ] &&
+    time=$(echo "$start_time $end_time" | awk '{printf "%.3f\n", ($2-$1)/1000}')
     p_rw $F_BOLD $C_CYAN
     p_ln "_______________________________________________"
     p_ln
@@ -94,9 +96,9 @@ endmessage() {
     ! [ -z "$time" ] && p_ln "Total time spent: " $C_MAGENTA "$time" $C_CYAN " seconds."
     if [ "$existingversion" != true ] && [ "$uninstall" != true ]; then
         p_ln
-        p_ln $C_CYAN "OpenMPT directory:        " $C_MAGENTA "${MPTDIR/~/"~"}/resources"
-        p_ln $C_CYAN "32-bit exe:               " $C_MAGENTA "${MPTDIR/~/"~"}/resources/bin/x86/OpenMPT.exe"
-        p_ln $C_CYAN "64-bit exe:               " $C_MAGENTA "${MPTDIR/~/"~"}/resources/bin/amd64/OpenMPT.exe"
+        p_ln $C_CYAN "OpenMPT directory:        " $C_MAGENTA "${MPTDIR/~/"~"}"
+        p_ln $C_CYAN "32-bit exe:               " $C_MAGENTA "${MPTDIR/~/"~"}/bin/x86/OpenMPT.exe"
+        p_ln $C_CYAN "64-bit exe:               " $C_MAGENTA "${MPTDIR/~/"~"}/bin/amd64/OpenMPT.exe"
         p_ln $C_CYAN "Wine directory:           " $C_MAGENTA "${WINEPREFIX/~/"~"}"
         p_ln $C_CYAN "OpenMPT config directory: " $C_MAGENTA "${WINEAPPDATA/~/"~"}/OpenMPT"
         p_ln $C_CYAN "Desktop entry:            " $C_MAGENTA "${APPDIR/~/"~"}/openmpt.desktop"
@@ -104,13 +106,11 @@ endmessage() {
         p_ln $C_CYAN "Launch script:            " $C_MAGENTA "${BINDIR/~/"~"}/openmpt"
         p_ln $C_CYAN "Wine launch script:       " $C_MAGENTA "${BINDIR/~/"~"}/mptwine"
         p_ln $F_UNBOLD $C_MAGENTA
-        p_ln "You can now launch OpenMPT from your application menu."
-        p_ln "Associating file types with it are also possible."
+        p_ln "You can now launch OpenMPT from your application menu,"
+        p_ln "or by typing " $C_GREEN  "openmpt" $C_MAGENTA " in the command line."
+        p_ln "Associating file types with the application are also possible."
         p_ln
-        p_ln "To update OpenMPT to a newer version, simply run this script and install OpenMPT again."
-        p_ln
-        p_ln "If you have " $C_CYAN "${BINDIR/~/"~"}" $C_MAGENTA " in your PATH environment variable,"
-        p_ln "you can run " $C_GREEN "openmpt" $C_MAGENTA " from the command line, and use " $C_GREEN "mptwine" $C_MAGENTA " as described below."
+        p_ln "To update OpenMPT to a newer version, simply run this script again."
         p_ln
         p_ln "To run a Wine program with OpenMPT's Wine directory, use " $C_GREEN "mptwine" $C_MAGENTA
         p_ln "Example: " $C_GREEN "mptwine cmd.exe" $C_MAGENTA
@@ -147,6 +147,13 @@ error_deps() {
     p_rw $F_UNBOLD $C_RESET
 }
 
+error_root() {
+    p_rw $F_BOLD $C_RED
+    p_ln "Although this script does require root privileges,"
+    p_ln "the script itself should not be run as root."
+    p_rw $F_UNBOLD $C_RESET
+}
+
 error_oldsetup_installed() {
     p_rw $F_BOLD $C_RED
     p_ln "OpenMPT has already been installed using the official installer."
@@ -157,28 +164,41 @@ error_oldsetup_installed() {
     p_rw $F_UNBOLD $C_YELLOW
     p_ln "After uninstalling, make sure that:"
     p_ln
-    p_ln "* There are no desktop entries in " $C_CYAN "~/.local/share/applications/wine/OpenMPT" $C_YELLOW
-    p_ln "  and " $C_CYAN "~/.config/menus/applications-merged" $C_YELLOW "."
+    p_ln "* There are no OpenMPT-related files in " $C_CYAN "~/.local/share/applications/wine" $C_YELLOW ", "
+    p_ln "  " $C_CYAN "~/.config/menus/applications-merged" $C_YELLOW ", and " $C_CYAN "~/.local/share/desktop-directories" $C_YELLOW "."
     p_ln
     p_ln "* There are no OpenMPT file associations in " $C_CYAN "~/.local/share/mime/packages" $C_YELLOW ","
     p_ln "  such as " $C_CYAN "x-wine-extension-s3m.xml" $C_YELLOW "."
-    p_rw "  If there are any, delete them and run " $C_GREEN "update-mime-database ~/.local/share/mime" $C_YELLOW
+    p_rw "  If there are, delete them and run " $C_GREEN "update-mime-database ~/.local/share/mime" $C_YELLOW
+    p_rw $F_UNBOLD $C_RESET
+}
+
+error_v01_installed() {
+    p_rw $F_BOLD $C_RED
+    p_ln "An old local OpenMPT setup has been detected, that was most likely installed"
+    p_ln "using version 0.1 or 0.0 of this script."
+    p_ln
+    p_rw $F_UNBOLD $C_YELLOW
+    p_ln "In order to install OpenMPT with the current version of the script,"
+    p_ln "uninstall OpenMPT first, by running " $C_GREEN "$SCRIPT uninstall" $C_YELLOW
     p_rw $F_UNBOLD $C_RESET
 }
 
 error() {
     local status=$1
     case $status in
-        1) p_ln $F_BOLD $C_RED "Invalid argument." $F_UNBOLD $C_RESET;;
-        2) error_deps "${@:2}";;
-        3) error_oldsetup_installed;;
-        4) p_ln $F_BOLD $C_RED "Connection error." $F_UNBOLD $C_RESET;;
-        5) p_ln $F_BOLD $C_RED "Server issued an error. The file probably does not exist." $F_UNBOLD $C_RESET;;
-        6) p_ln $F_BOLD $C_RED "Unable to write file.";;
-        7) p_ln $F_BOLD $C_RED "Corrupted file.";;
-        8) p_ln $F_BOLD $C_RED "Unable to allocate enough memory.";;
-        9) p_ln $F_BOLD $C_RED "Not enough disk space.";;
-        *) p_ln $F_BOLD $C_RED "An error occured." $F_UNBOLD $C_RESET; status=127;;
+        1)  p_ln $F_BOLD $C_RED "Invalid argument.";;
+        2)  error_deps "${@:2}";;
+        3)  error_root;;
+        4)  p_ln $F_BOLD $C_RED "Connection error.";;
+        5)  p_ln $F_BOLD $C_RED "Server issued an error. The file probably does not exist.";;
+        6)  p_ln $F_BOLD $C_RED "Unable to write file.";;
+        7)  p_ln $F_BOLD $C_RED "Corrupted file.";;
+        8)  p_ln $F_BOLD $C_RED "Unable to allocate enough memory.";;
+        9)  p_ln $F_BOLD $C_RED "Not enough disk space.";;
+        16) error_oldsetup_installed;;
+        17) error_v01_installed;;
+        *)  p_ln $F_BOLD $C_RED "An error occured."; status=127;;
     esac
     quit $status
 }
@@ -210,6 +230,7 @@ checkstatus_unzip() {
         *)           error 127;;
     esac
 }
+
 checkstatus_fileop() {
     local status=$1
     [ $status -eq 0 ] && p_ln $F_BOLD $C_GREEN "DONE" $F_UNBOLD $C_RESET && return
@@ -219,6 +240,11 @@ checkstatus_fileop() {
 
 download_file() {
     curl --fail -s "$1" -o "$2"
+    checkstatus_curl $? "$2"
+}
+
+sudo_download_file() {
+    sudo curl --fail -s "$1" -o "$2"
     checkstatus_curl $? "$2"
 }
 
@@ -240,28 +266,18 @@ get_latest_version() {
     rm "$TMPDIR/version.json"
 }
 
-download_32() {
+download() {
     p_rw $F_BOLD $C_WHITE "Downloading OpenMPT $version (32-bit)..."
     download_file "$url_download32" "$TMPDIR/mpt32.zip"
-}
-
-download_64() {
     p_rw $F_BOLD $C_WHITE "Downloading OpenMPT $version (64-bit)..."
     download_file "$url_download64" "$TMPDIR/mpt64.zip"
 }
 
-download() {
-    download_32 && download_64
-}
-
-extract_32() {
+extract() {
     mkdir "$TMPDIR/mpt32"
+    mkdir "$TMPDIR/mpt64"
     p_rw $F_BOLD $C_WHITE "Extracting OpenMPT $version (32-bit)..."
     unzip_file "$TMPDIR/mpt32.zip" "$TMPDIR/mpt32"
-}
-
-extract_64() {
-    mkdir "$TMPDIR/mpt64"
     p_rw $F_BOLD $C_WHITE "Extracting OpenMPT $version (64-bit)..."
     unzip_file "$TMPDIR/mpt64.zip" "$TMPDIR/mpt64"
 }
@@ -304,40 +320,41 @@ merge_common() {
 }
 
 prepare() {
-    extract_32 && extract_64
+    extract
     rm "$TMPDIR/mpt32.zip" && rm "$TMPDIR/mpt64.zip"
     merge_common
     rm "$TMPDIR/mptcommon/OpenMPT.portable"
 }
 
 install_openmpt_files() {
-    mkdir -p "$MPTDIR/resources"
+    sudo mkdir -p "$MPTDIR"
     p_rw $F_BOLD $C_WHITE "Installing OpenMPT files..."
-    cp -RT "$TMPDIR/mptcommon" "$MPTDIR/resources"
+    sudo cp -RT "$TMPDIR/mptcommon" "$MPTDIR"
     checkstatus_fileop $?
-    echo "$version" > "$MPTDIR/.mptver"
-    echo "$channel" > "$MPTDIR/.mptchn"
+    echo "$version" | sudo tee "$MPTDIR/.mptver" >/dev/null
+    echo "$channel" | sudo tee "$MPTDIR/.mptchn" >/dev/null
 }
 
 install_desktop_entry() {
-    mkdir -p "$APPDIR"
+    sudo mkdir -p "$APPDIR"
     p_rw $F_BOLD $C_WHITE "Installing desktop entry..."
-    cp "$SCRIPTDIR/resources/openmpt.desktop" "$APPDIR"
+    sudo cp "$SCRIPTDIR/resources/openmpt.desktop" "$APPDIR"
     checkstatus_fileop $?
 }
 
 install_icon() {
-    mkdir -p "$ICODIR/hicolor/256x256/apps"
+    sudo mkdir -p "$ICODIR/hicolor/256x256/apps"
     p_rw $F_BOLD $C_WHITE "Downloading icon for desktop entry..."
-    download_file "$URL_MPTICON" "$ICODIR/hicolor/256x256/apps/openmpt.png"
+    sudo_download_file "$URL_MPTICON" "$ICODIR/hicolor/256x256/apps/openmpt.png"
 }
 
 install_launch_script() {
-    mkdir -p "$BINDIR"
+    sudo mkdir -p "$BINDIR"
     p_rw $F_BOLD $C_WHITE "Installing launch script..."
-    cp "$SCRIPTDIR/resources/openmpt" "$BINDIR" && cp "$SCRIPTDIR/resources/mptwine" "$BINDIR"
+    sudo cp "$SCRIPTDIR/resources/openmpt" "$BINDIR" && sudo cp "$SCRIPTDIR/resources/mptwine" "$BINDIR"
     checkstatus_fileop $?
-    chmod +x "$BINDIR/openmpt" && chmod +x "$BINDIR/mptwine"
+    sudo chmod +x "$BINDIR/openmpt"
+    sudo chmod +x "$BINDIR/mptwine"
 }
 
 configure_wine() {
@@ -355,25 +372,29 @@ migrate_old_config() {
 
 uninstall_openmpt_files() {
     p_rw $F_BOLD $C_WHITE "Uninstalling OpenMPT files..."
-    rm -rf "$MPTDIR/resources" "$MPTDIR/.mptver" "$MPTDIR/.mptchn"
+    rm -rf "$MPTDIR_L/resources" "$MPTDIR_L/.mptver" "$MPTDIR_L/.mptchn"
+    sudo rm -rf "$MPTDIR"
     checkstatus_fileop $?
 }
 
 uninstall_desktop_entry() {
     p_rw $F_BOLD $C_WHITE "Uninstalling desktop entry..."
-    rm "$APPDIR/openmpt.desktop"
+    rm -f "$APPDIR_L/openmpt.desktop"
+    sudo rm -f "$APPDIR/openmpt.desktop"
     checkstatus_fileop $?
 }
 
 uninstall_icon() {
     p_rw $F_BOLD $C_WHITE "Uninstalling desktop icon..."
-    rm "$ICODIR/hicolor/256x256/apps/openmpt.png"
+    rm -f "$ICODIR_L/hicolor/256x256/apps/openmpt.png"
+    sudo rm -f "$ICODIR/hicolor/256x256/apps/openmpt.png"
     checkstatus_fileop $?
 }
 
 uninstall_launch_script() {
     p_rw $F_BOLD $C_WHITE "Uninstalling launch script..."
-    rm "$BINDIR/openmpt" && rm "$BINDIR/mptwine"
+    rm -f "$BINDIR_L/openmpt" "$BINDIR_L/mptwine"
+    sudo rm -f "$BINDIR/openmpt" "$BINDIR/mptwine"
     checkstatus_fileop $?
 }
 
@@ -381,7 +402,7 @@ uninstall_wine_files() {
     mkdir -p "$WINEAPPDATA/OpenMPT"
     p_rw $F_BOLD $C_WHITE "Uninstalling Wine files..."
     mv "$WINEAPPDATA/OpenMPT" "$TMPDIR" &&
-    rm -rf "$MPTDIR/wine"               &&
+    rm -rf "$WINEPREFIX"                &&
     mkdir -p "$WINEAPPDATA"             &&
     mv "$TMPDIR/OpenMPT" "$WINEAPPDATA"
     checkstatus_fileop $?
@@ -401,6 +422,10 @@ show_usage() {
     p_rw $C_RESET
 }
 
+check_root() {
+    [ "$EUID" -eq 0 ] && error 3
+}
+
 check_deps() {
     local missingdeps=()
     for DEP in "$@"; do ! command -v "$DEP" &>/dev/null && missingdeps+=("$DEP"); done
@@ -409,9 +434,12 @@ check_deps() {
 
 check_uninstall() {
     local message="You are about to uninstall OpenMPT. Continue?"
-    [ -f "$MPTDIR/.mptver" ] && version="$(< "$MPTDIR/.mptver")" && message="You are about to uninstall OpenMPT $version. Continue?"
+    [ -f "$MPTDIR_L/.mptver" ] && version="$(< "$MPTDIR_L/.mptver")"
+    [ -f "$MPTDIR/.mptver"   ] && version="$(< "$MPTDIR/.mptver")"
+    ! [ -z "$version" ] && message="You are about to uninstall OpenMPT $version. Continue?"
     p_rw $F_BOLD $C_YELLOW
-    if ! [ -d "$MPTDIR/resources" ] && ! [ -f "$APPDIR/openmpt.desktop" ] && ! [ -f "$BINDIR/openmpt" ]; then
+    if ! [ -d "$MPTDIR"             ] && ! [ -f "$APPDIR/openmpt.desktop"   ] && ! [ -f "$BINDIR/openmpt"   ] &&
+       ! [ -d "$MPTDIR_L/resources" ] && ! [ -f "$APPDIR_L/openmpt.desktop" ] && ! [ -f "$BINDIR_L/openmpt" ] ; then
         p_ln "OpenMPT is not installed."
         quit
     fi
@@ -434,14 +462,15 @@ check_arg() {
 
 check_oldsetup_installed() {
     [ -d $HOME/.local/share/applications/wine/Programs/OpenMPT ] ||
-    ls $HOME/.config/menus/applications-merged/wine-Programs-OpenMPT-* 1> /dev/null 2>&1 &&
-    error 3
+    ls $HOME/.config/menus/applications-merged/wine-Programs-OpenMPT-* 1> /dev/null 2>&1 ||
+    [ -f $HOME/.local/share/desktop-directories/wine-Programs-OpenMPT.directory ] &&
+    error 16
     for DRIVE in {a..z}; do
         [ -f $HOME/.wine/drive_$DRIVE/Program\ Files/OpenMPT/bin/x86/OpenMPT.exe   ] ||
         [ -f $HOME/.wine/drive_$DRIVE/Program\ Files/OpenMPT/bin/amd64/OpenMPT.exe ] ||
         [ -f $HOME/.wine/drive_$DRIVE/Program\ Files/OpenMPT/OpenMPT.exe           ] ||
         [ -f $HOME/.wine/drive_$DRIVE/Program\ Files\ \(x86\)/OpenMPT/OpenMPT.exe  ] &&
-        error 3
+        error 16
     done
 }
 
@@ -490,15 +519,21 @@ check_resources() {
     for RESOURCE in "$@"; do check_resource "$RESOURCE"; done
 }
 
+check_v01_installed() {
+    [ -d "$MPTDIR_L/resources"                        ] ||
+    [ -f "$MPTDIR_L/.mptver"                          ] ||
+    [ -f "$MPTDIR_L/.mptchn"                          ] ||
+    [ -f "$BINDIR_L/openmpt"                          ] ||
+    [ -f "$BINDIR_L/mptwine"                          ] ||
+    [ -f "$APPDIR_L/openmpt.desktop"                  ] ||
+    [ -f "$ICODIR_L/hicolor/256x256/apps/openmpt.png" ] &&
+    error 17
+}
+
 check_install() {
     local message="You are about to install OpenMPT $version. Continue?"
     [ -f "$MPTDIR/.mptver" ] && existingversion=true
     p_ln $F_BOLD $C_YELLOW
-    if ! [[ ":$PATH:" == *":$HOME/.local/bin:"* ]]; then
-        p_ln $F_BOLD $C_YELLOW "You do not seem to have " $F_UNBOLD $C_CYAN "~/.local/bin" $F_BOLD $C_YELLOW " added to your PATH environment variable."
-        p_ln "It is recommended to stop the script, add it, and run the script again."
-        p_ln
-    fi
     if [ -f "$MPTDIR/.mptchn" ] && [ "$(< "$MPTDIR/.mptchn")" = "development" ] && [ "$channel" != "development" ]; then
         p_ln "WARNING:"
         p_ln "The currently installed version of OpenMPT is a development version,"
@@ -509,14 +544,7 @@ check_install() {
         p_ln "development channel instead."
         p_ln
     fi
-    if [ "$existingversion" != true ]; then
-        p_ln "This script installs OpenMPT for the current user only."
-        p_ln "If anyone else on this computer wants to have OpenMPT installed,"
-        p_ln "they should run this script on their account as well."
-        p_ln
-    else
-        p_ln "Existing OpenMPT install found."
-    fi
+    [ "$existingversion" = true ] && p_ln "Existing OpenMPT install found."
     if [ -f "$MPTDIR/.mptver" ]; then
         if [ "$(< "$MPTDIR/.mptver")" = "$version" ]; then message="You already have OpenMPT $version installed. Install anyway?"
         else
@@ -533,24 +561,23 @@ check_install() {
     p_ln
 }
 
-get_start_time() {
-    start_time="$(date +%s%3N)"
-}
+get_start_time() { start_time="$(date +%s%3N)"; }
 
-get_end_time() {
-    end_time="$(date +%s%3N)"
-}
+get_end_time() { end_time="$(date +%s%3N)"; }
 
 
 
 # Script starts here
 
-clear
+initialize
 startmessage
+check_root
 check_oldsetup_installed
 check_arg $1
 if [ "$uninstall" = true ]; then
+    check_deps ${DEPS_COMMON[@]} ${DEPS_UNINSTALL[@]}
     check_uninstall
+    refresh_sudo
     get_start_time
     uninstall_openmpt_files
     uninstall_desktop_entry
@@ -559,11 +586,13 @@ if [ "$uninstall" = true ]; then
     uninstall_wine_files
     get_end_time
 else
-    check_deps ${DEPS[@]}
+    check_deps ${DEPS_COMMON[@]} ${DEPS_INSTALL[@]}
     check_resources ${RESOURCES[@]}
+    check_v01_installed
     check_oldsetup_config
     get_latest_version $channel
     check_install
+    refresh_sudo
     get_start_time
     download
     prepare
