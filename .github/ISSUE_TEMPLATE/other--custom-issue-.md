@@ -1,5 +1,5 @@
 ---
-name: Custom issue
+name: Other (custom issue)
 about: Other
 title: ''
 labels: ''
