@@ -1,4 +1,4 @@
 #!/usr/bin/bash
 export WINEPREFIX=$HOME/.wine-openmpt
-export WINEDEBUG=-all
+[ -z "$WINEDEBUG" ] && export WINEDEBUG=-all
 wine "$@"

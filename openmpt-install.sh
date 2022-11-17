@@ -1,13 +1,13 @@
 #!/usr/bin/bash
 
 # cs127's OpenMPT install/update script for Linux
-# version 0.2.0
+# version 0.2.1
 
 # https://cs127.github.io
 
 
 
-SCRIPTVER=0.2.0
+SCRIPTVER=0.2.1
 DEPS_COMMON=("sudo")
 DEPS_INSTALL=("wine" "curl" "jq" "unzip")
 DEPS_UNINSTALL=()
@@ -331,8 +331,9 @@ install_openmpt_files() {
     p_rw $F_BOLD $C_WHITE "Installing OpenMPT files..."
     sudo cp -RT "$TMPDIR/mptcommon" "$MPTDIR"
     checkstatus_fileop $?
-    echo "$version" | sudo tee "$MPTDIR/.mptver" >/dev/null
-    echo "$channel" | sudo tee "$MPTDIR/.mptchn" >/dev/null
+    echo "$version" | sudo tee "$MPTDIR/.mptver" &>/dev/null
+    echo "$channel" | sudo tee "$MPTDIR/.mptchn" &>/dev/null
+    sudo cp "$SCRIPTDIR/resources/wine_config.reg" "$MPTDIR"
 }
 
 install_desktop_entry() {
