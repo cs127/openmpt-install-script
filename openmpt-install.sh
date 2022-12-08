@@ -1,13 +1,13 @@
-#!/usr/bin/bash
+#!/usr/bin/env bash
 
 # cs127's OpenMPT install/update script for Linux
-# version 0.2.1
+# version 0.2.2
 
 # https://cs127.github.io
 
 
 
-SCRIPTVER=0.2.1
+SCRIPTVER=0.2.2
 DEPS_COMMON=("sudo")
 DEPS_INSTALL=("wine" "curl" "jq" "unzip")
 DEPS_UNINSTALL=()
@@ -71,6 +71,19 @@ p_rw() { for ARG in "$@"; do echo -ne "$ARG"; done; }
 
 p_ln() { p_rw "$@" "\n"; }
 
+quit() {
+    p_ln $F_UNBOLD $C_RESET
+    rm -rf "$TMPDIR"
+    exit $1
+}
+
+cancel() {
+    p_rw $F_UNBOLD $C_RED
+    [ "$uninstall" != true ] && p_ln "Installation canceled." || p_ln "Uninstallation canceled."
+    p_rw $C_RESET
+    quit 64
+}
+
 initialize() { clear; cd "$SCRIPTDIR"; }
 
 refresh_sudo() { sudo -v && return; cancel; }
@@ -126,31 +139,11 @@ endmessage() {
     fi
 }
 
-quit() {
-    p_ln $F_UNBOLD $C_RESET
-    rm -rf "$TMPDIR"
-    exit $1
-}
-
-cancel() {
-    p_rw $F_UNBOLD $C_RED
-    [ "$uninstall" != true ] && p_ln "Installation canceled." || p_ln "Uninstallation canceled."
-    p_rw $C_RESET
-    quit 64
-}
-
 error_deps() {
     p_rw $F_BOLD $C_RED
     p_ln "The following dependencies are not installed:"
     for DEP in "$@"; do p_ln $C_RED "* " $C_WHITE "$DEP"; done
     p_ln $C_RED "Please install them using your package manager, and run this script again."
-    p_rw $F_UNBOLD $C_RESET
-}
-
-error_root() {
-    p_rw $F_BOLD $C_RED
-    p_ln "Although this script does require root privileges,"
-    p_ln "the script itself should not be run as root."
     p_rw $F_UNBOLD $C_RESET
 }
 
@@ -189,7 +182,7 @@ error() {
     case $status in
         1)  p_ln $F_BOLD $C_RED "Invalid argument.";;
         2)  error_deps "${@:2}";;
-        3)  error_root;;
+        3)  p_ln $F_BOLD $C_RED "Although this script requires root privileges, it should not be run as root.";;
         4)  p_ln $F_BOLD $C_RED "Connection error.";;
         5)  p_ln $F_BOLD $C_RED "Server issued an error. The file probably does not exist.";;
         6)  p_ln $F_BOLD $C_RED "Unable to write file.";;
@@ -253,13 +246,9 @@ unzip_file() {
     checkstatus_unzip $? "$1"
 }
 
-get_update_file() {
+get_latest_version() {
     p_rw $F_BOLD $C_WHITE "Getting latest OpenMPT version number ($1 channel)..."
     download_file "$URL_MPTAPI$1" "$TMPDIR/version.json"
-}
-
-get_latest_version() {
-    get_update_file $1
     version=$(cat "$TMPDIR/version.json" | jq -r '.[].version')
     url_download32=$(cat "$TMPDIR/version.json" | jq -r '.[].downloads."portable-x86".download_url')
     url_download64=$(cat "$TMPDIR/version.json" | jq -r '.[].downloads."portable-amd64".download_url')

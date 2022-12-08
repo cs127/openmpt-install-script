@@ -1,7 +1,7 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 # cs127's OpenMPT launch script for Linux
-# version 0.2.1
+# version 0.2.2
 
 # https://cs127.github.io
 
@@ -30,15 +30,15 @@ export WINEPREFIX=$HOME/.wine-openmpt
 
 # Detect if running as root.
 if [ "$EUID" -eq 0 ]; then
-    echo OpenMPT should not be run as root.
+    echo "OpenMPT should not be run as root."
     exit 64
 fi
 
 # Detect architecture.
-if [ -z ${MPTARCH+x} ]; then
+if [ -z "$MPTARCH" ]; then
     uname -m | grep '64' &>/dev/null && MPTARCH=64 || MPTARCH=32
-elif [ "$MPTARCH" != "64" ] && [ "$MPTARCH" != "32" ]; then
-    echo Invalid architecture \'$MPTARCH\'. Must be \'64\' or \'32\'.
+elif [ "$MPTARCH" != "32" ] && [ "$MPTARCH" != "64" ]; then
+    echo "Invalid architecture '$MPTARCH'. Must be '32' or '64'."
     exit 65
 fi
 
