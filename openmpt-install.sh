@@ -1,4 +1,4 @@
-#!/usr/bin/env bash
+#!/bin/bash
 
 # cs127's OpenMPT install/update script for Linux
 # version 0.2.2
