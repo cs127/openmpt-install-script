@@ -84,7 +84,7 @@ cancel() {
     quit 64
 }
 
-initialize() { clear; cd "$SCRIPTDIR"; }
+initialize() { cd "$SCRIPTDIR"; }
 
 refresh_sudo() { sudo -v && return; cancel; }
 
