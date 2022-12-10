@@ -11,7 +11,7 @@ It also creates a desktop entry that can be accessed through your application me
 ```bash
 sudo pacman -S wine jq unzip curl
 ```
-If `sudo` is not installed, use `su` or log in as root, run the command wihout `sudo`, and install `sudo` alongside the other packages.
+If `sudo` is not installed, log in as root, run the command wihout `sudo`, and install `sudo` alongside the other packages.
 You will need `sudo` to run the script anyway.
 
 ### Download the script
