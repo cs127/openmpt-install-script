@@ -56,12 +56,14 @@ The command-line options are:
 * `-a` or `--auto`:      Auto mode (confirm everything without asking).
 * `-p` or `--proxy`:     Download using a proxy. Followed by a valid proxy address.
 * `--`:                  End of options.
+
 Using multiple options in a single argument (e.g. `-au`) is not supported (yet).
 
 The download channel can be one of the following:
 * `release`:     current stable release.
 * `next`:        preview of the next minor update.
 * `development`: preview of the next major update.
+
 If a download channel is not specified, the script will automatically choose 'release',
 or the currently installed one if OpenMPT is already installed.
 
