@@ -38,19 +38,19 @@ cd ~/.mptinst
 ```bash
 chmod +x openmpt-install.sh
 ```
-* To install OpenMPT, run the script. You can optionally specify command line options, and the download channel.
+* To install OpenMPT, run the script. You can optionally specify command-line options, and the download channel.
   In this example, I have enabled "auto mode (`-a` or `--auto`)". This causes the script to confirm everything without asking.
   I have also set the download channel to `development`.
 ```bash
 ./openmpt-install.sh -a development
 ```
-* To uninstall OpenMPT, run the script with the `-u` or `--uninstall` command-line argument.
+* To uninstall OpenMPT, run the script with the `-u` or `--uninstall` command-line option.
   In this example, I have also used auto mode as well.
 ```bash
 ./openmpt-install.sh -u -a
 ```
 
-The command line options are:
+The command-line options are:
 * `-h` or `--help`:      Show the help screen.
 * `-u` or `--uninstall`: Uninstall OpenMPT instead of installing or updating.
 * `-a` or `--auto`:      Auto mode (confirm everything without asking).
