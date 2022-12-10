@@ -4,6 +4,7 @@ This is a Bash script for simple installation of [OpenMPT](https://openmpt.org) 
 
 It also creates a desktop entry that can be accessed through your application menu, which you can open module files with, or even associate module files with it.
 
+
 ## Usage
 
 ### Download the script
@@ -37,20 +38,40 @@ cd ~/.mptinst
 ```bash
 chmod +x openmpt-install.sh
 ```
-* To install OpenMPT, run the script followed by the name of the update channel. I will use `development` as an example.
+* To install OpenMPT, run the script. You can optionally specify command line options, and the download channel.
+  In this example, I have enabled "auto mode (`-a` or `--auto`)". This causes the script to confirm everything without asking.
+  I have also set the download channel to `development`.
 ```bash
-./openmpt-install.sh development
+./openmpt-install.sh -a development
 ```
-* To uninstall OpenMPT, run the script followed by the word `uninstall`.
+* To uninstall OpenMPT, run the script with the `-u` or `--uninstall` command-line argument.
+  In this example, I have also used auto mode as well.
 ```bash
-./openmpt-install.sh uninstall
+./openmpt-install.sh -u -a
 ```
+
+The command line options are:
+* `-h` or `--help`:      Show the help screen.
+* `-u` or `--uninstall`: Uninstall OpenMPT instead of installing or updating.
+* `-a` or `--auto`:      Auto mode (confirm everything without asking).
+* `-p` or `--proxy`:     Download using a proxy. Followed by a valid proxy address.
+* `--`:                  End of options.
+Using multiple options in a single argument (e.g. `-au`) is not supported (yet).
+
 The download channel can be one of the following:
-* `release`: current stable release.
-* `next`: preview of the next minor update.
+* `release`:     current stable release.
+* `next`:        preview of the next minor update.
 * `development`: preview of the next major update.
+If a download channel is not specified, the script will automatically choose 'release',
+or the currently installed one if OpenMPT is already installed.
+
+The download channel is ignored by the uninstall option.
+
+### Other
 
 To update OpenMPT, simply run the script again.
+The download channel does not need to be specified.
+The script will automatically use the same one that was used for the version that is already installed.
 
 For command-line arguments of OpenMPT, read the comments in the beginning of the
 [launch script](https://github.com/cs127/openmpt-install-script/blob/master/resources/openmpt).
