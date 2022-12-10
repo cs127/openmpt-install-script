@@ -6,7 +6,7 @@ It also creates a desktop entry that can be accessed through your application me
 
 ## Usage
 
-### Install requirements.
+### Install requirements
 * Download `wine`, `jq`, `unzip`, and `curl` using your pckage manager. I will use pacman as an example.
 ```bash
 sudo pacman -S wine jq unzip curl
