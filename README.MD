@@ -4,8 +4,15 @@ This is a Bash script for simple installation of [OpenMPT](https://openmpt.org) 
 
 It also creates a desktop entry that can be accessed through your application menu, which you can open module files with, or even associate module files with it.
 
-
 ## Usage
+
+### Install requirements.
+* Download `wine`, `jq`, `unzip`, and `curl` using your pckage manager. I will use pacman as an example.
+```bash
+sudo pacman -S wine jq unzip curl
+```
+If `sudo` is not installed, use `su` or log in as root, run the command wihout `sudo`, and install `sudo` alongside the other packages.
+You will need `sudo` to run the script anyway.
 
 ### Download the script
 
@@ -38,16 +45,16 @@ cd ~/.mptinst
 ```bash
 chmod +x openmpt-install.sh
 ```
-* To install OpenMPT, run the script. You can optionally specify command-line options, and the download channel.
+* To install OpenMPT, run the script using sudo. You can optionally specify command-line options, and the download channel.
   In this example, I have enabled "auto mode (`-a` or `--auto`)". This causes the script to confirm everything without asking.
   I have also set the download channel to `development`.
 ```bash
-./openmpt-install.sh -a development
+sudo ./openmpt-install.sh -a development
 ```
-* To uninstall OpenMPT, run the script with the `-u` or `--uninstall` command-line option.
+* To uninstall OpenMPT, run the script using sudo, with the `-u` or `--uninstall` command-line option.
   In this example, I have also used auto mode as well.
 ```bash
-./openmpt-install.sh -u -a
+sudo ./openmpt-install.sh -u -a
 ```
 
 The command-line options are:
