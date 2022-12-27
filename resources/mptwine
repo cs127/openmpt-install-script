@@ -1,4 +1,12 @@
 #!/bin/bash
+
+# Set Wine options.
+MPTDIR=/opt/openmpt
 export WINEPREFIX=$HOME/.wine-openmpt
 [ -z "$WINEDEBUG" ] && export WINEDEBUG=-all
+
+# Configure Wine if the current user has never run the OpenMPT Wineprefix.
+! [ -f "$WINEPREFIX/user.reg" ] && wine regedit "$MPTDIR/wine_config.reg" &>/dev/null
+
+# Run Wine.
 wine "$@"

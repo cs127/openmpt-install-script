@@ -7,11 +7,11 @@ It also creates a desktop entry that can be accessed through your application me
 ## Usage
 
 ### Install requirements
-* Download `wine`, `jq`, `unzip`, and `curl` using your pckage manager. I will use pacman as an example.
+* Install `wine`, `jq`, `unzip`, and `curl` using your package manager. I will use pacman as an example.
+  (If you are using pacman, `curl` will already be installed. This is just an example.)
 ```bash
 sudo pacman -S wine jq unzip curl
 ```
-If `sudo` is not installed, log in as root and install it. You will need `sudo` to run the script.
 
 ### Download the script
 
@@ -33,6 +33,7 @@ git pull
 In case you can't clone the repository, you can just download the script
 ([openmpt-install.sh](https://raw.githubusercontent.com/cs127/openmpt-install-script/master/openmpt-install.sh))
 by itself. It will automatically download the rest of the files in the repository after you run it.
+However, you won't be able to automatically update the script by pulling the repository.
 
 ### Run the script
 
@@ -44,7 +45,7 @@ cd ~/.mptinst
 ```bash
 chmod +x openmpt-install.sh
 ```
-* To install OpenMPT, run the script using sudo. You can optionally specify command-line options, and the download channel.
+* To install OpenMPT, run the script with root privileges. You can optionally specify command-line options, and the download channel.
   In this example, I have enabled "auto mode (`-a` or `--auto`)". This causes the script to confirm everything without asking.
   I have also set the download channel to `development`.
 ```bash
