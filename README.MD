@@ -51,7 +51,7 @@ chmod +x openmpt-install.sh
 ```bash
 sudo ./openmpt-install.sh -a development
 ```
-* To uninstall OpenMPT, run the script using sudo, with the `-u` or `--uninstall` command-line option.
+* To uninstall OpenMPT, run the script with root privileges, with the `-u` or `--uninstall` command-line option.
   In this example, I have also used auto mode as well.
 ```bash
 sudo ./openmpt-install.sh -u -a
