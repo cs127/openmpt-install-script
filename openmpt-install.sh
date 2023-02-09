@@ -1,13 +1,13 @@
 #!/bin/bash
 
 # cs127's OpenMPT install/update script for Linux
-# version 0.4.0
+# version 0.4.1
 
 # https://cs127.github.io
 
 
 
-SCRIPTVER=0.4.0
+SCRIPTVER=0.4.1
 DEPS_COMMON=()
 DEPS_INSTALL=("wine" "curl" "jq" "unzip")
 DEPS_UNINSTALL=()
@@ -114,7 +114,7 @@ endmessage() {
         p_ln $C_CYAN "32-bit exe:               " $C_MAGENTA "${MPTDIR}/bin/x86/OpenMPT.exe"
         p_ln $C_CYAN "64-bit exe:               " $C_MAGENTA "${MPTDIR}/bin/amd64/OpenMPT.exe"
         p_ln $C_CYAN "Wine directory:           " $C_MAGENTA "~/.wine-openmpt"
-        p_ln $C_CYAN "OpenMPT config directory: " $C_MAGENTA "~/.wine-openmpt/drive_c/users/$USER/AppData/Roaming"
+        p_ln $C_CYAN "OpenMPT config directory: " $C_MAGENTA "~/.wine-openmpt/drive_c/users/\$USER/AppData/Roaming"
         p_ln $C_CYAN "Desktop entry:            " $C_MAGENTA "${APPDIR}/openmpt.desktop"
         p_ln $C_CYAN "Desktop icon:             " $C_MAGENTA "${ICODIR}/hicolor/256x256/apps/openmpt.png"
         p_ln $C_CYAN "Launch script:            " $C_MAGENTA "${BINDIR}/openmpt"
@@ -187,7 +187,6 @@ error() {
     case $status in
         1)  p_ln $F_BOLD $C_RED "Invalid argument '$2'.";;
         2)  error_deps "${@:2}";;
-        3)  p_ln $F_BOLD $C_RED "Proxy connection error.";;
         4)  p_ln $F_BOLD $C_RED "Connection error.";;
         5)  p_ln $F_BOLD $C_RED "Server issued an error. The file probably does not exist.";;
         6)  p_ln $F_BOLD $C_RED "Unable to write file.";;
@@ -211,13 +210,12 @@ checkstatus_curl() {
     p_ln $F_BOLD $C_RED "FAILED" $F_UNBOLD $C_RESET
     [ -f "$2" ] && rm "$2"
     case $status in
-        97)                error 3;;
-        5|6|7|28|35|55|56) error 4;;
-        22)                error 5;;
-        23)                error 6;;
-        18)                error 7;;
-        27)                error 8;;
-        *)                 error 127;;
+        5|6|7|28|35|55|56|97) error 4;;
+        22)                   error 5;;
+        23)                   error 6;;
+        18)                   error 7;;
+        27)                   error 8;;
+        *)                    error 127;;
     esac
 }
 
@@ -243,9 +241,9 @@ checkstatus_fileop() {
 
 download_file() {
     if [ -z "$proxy" ]; then
-        curl --fail -s "$1" -o "$2"
-    elif ! [ -z "$proxy" ]; then
-        curl --fail -x "$proxy" -s "$1" -o "$2"
+        curl --fail --retry 99 -s "$1" -o "$2"
+    else
+        curl --fail --retry 99 -x "$proxy" -s "$1" -o "$2"
     fi
     checkstatus_curl $? "$2"
 }
@@ -269,6 +267,11 @@ download() {
     download_file "$url_download32" "$TMPDIR/mpt32.zip"
     p_rw $F_BOLD $C_WHITE "Downloading OpenMPT $version (64-bit)..."
     download_file "$url_download64" "$TMPDIR/mpt64.zip"
+}
+
+download_icon() {
+    p_rw $F_BOLD $C_WHITE "Downloading desktop icon..."
+    download_file "$URL_MPTICON" "$TMPDIR/openmpt.png"
 }
 
 extract() {
@@ -343,8 +346,9 @@ install_desktop_entry() {
 
 install_icon() {
     mkdir -p "$ICODIR/hicolor/256x256/apps"
-    p_rw $F_BOLD $C_WHITE "Downloading icon for desktop entry..."
-    download_file "$URL_MPTICON" "$ICODIR/hicolor/256x256/apps/openmpt.png"
+    p_rw $F_BOLD $C_WHITE "Installing desktop icon..."
+    cp "$TMPDIR/openmpt.png" "$ICODIR/hicolor/256x256/apps"
+    checkstatus_fileop $?
 }
 
 install_launch_script() {
@@ -354,12 +358,6 @@ install_launch_script() {
     checkstatus_fileop $?
     chmod +x "$BINDIR/openmpt"
     chmod +x "$BINDIR/mptwine"
-}
-
-configure_wine() {
-    p_rw $F_BOLD $C_WHITE "Configuring Wine..."
-    wine regedit "$SCRIPTDIR/resources/wine_config.reg" &>/dev/null
-    p_ln $F_BOLD $C_GREEN "DONE" $F_UNBOLD $C_RESET
 }
 
 migrate_old_config() {
@@ -693,6 +691,7 @@ else
     check_install
     get_start_time
     download
+    download_icon
     prepare
     install_openmpt_files
     install_desktop_entry
