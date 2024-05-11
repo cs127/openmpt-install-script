@@ -1,13 +1,13 @@
 #!/bin/bash
 
 # cs127's OpenMPT install/update script for Linux
-# version 0.4.1
+# version 0.5.0
 
 # https://cs127.github.io
 
 
 
-SCRIPTVER=0.4.1
+SCRIPTVER=0.5.0
 DEPS_COMMON=()
 DEPS_INSTALL=("wine" "curl" "jq" "unzip")
 DEPS_UNINSTALL=()
@@ -51,7 +51,6 @@ time=""
 
 
 
-__RESETALL='\e[0m'
 F_BOLD='\e[1m'
 F_UNBOLD='\e[22m'
 C_BLACK='\e[30m'
@@ -70,26 +69,30 @@ p_rw() { for ARG in "$@"; do echo -ne "$ARG"; done; }
 
 p_ln() { p_rw "$@" "\n"; }
 
-quit() {
+quit()
+{
     p_ln $F_UNBOLD $C_RESET
     rm -rf "$TMPDIR"
     exit $1
 }
 
-cancel() {
+cancel()
+{
     p_rw $F_UNBOLD $C_RED
-    [ "$uninstall" != true ] && p_ln "Installation canceled." || p_ln "Uninstallation canceled."
+    [ "$uninstall" != true ] && p_ln "Installation cancelled." || p_ln "Uninstallation cancelled."
     p_rw $C_RESET
     quit 64
 }
 
-initialize() {
+initialize()
+{
     IFS="\\" read -r -a usernames <<< "$(getent passwd | awk -F: '{if ($3 >= 1000) printf "%s\\", $1}')"
     IFS="\\" read -r -a userhomes <<< "$(getent passwd | awk -F: '{if ($3 >= 1000) printf "%s\\", $6}')"
-    cd "$SCRIPTDIR";
+    cd "$SCRIPTDIR"
 }
 
-startmessage() {
+startmessage()
+{
     p_ln $F_BOLD $C_CYAN
     p_ln "cs127's OpenMPT install/update script for Linux"
     p_ln "version $SCRIPTVER"
@@ -98,7 +101,8 @@ startmessage() {
     p_ln $F_UNBOLD $C_RESET
 }
 
-endmessage() {
+endmessage()
+{
     ! [ -z "$start_time" ] && ! [ -z "$end_time" ] &&
     time=$(echo "$start_time $end_time" | awk '{printf "%.3f\n", ($2-$1)/1000}')
     p_rw $F_BOLD $C_CYAN
@@ -108,13 +112,14 @@ endmessage() {
     p_ln $C_GREEN "Successfully installed OpenMPT $version." $C_CYAN ||
     p_ln $C_GREEN "Successfully uninstalled OpenMPT $version." $C_CYAN
     ! [ -z "$time" ] && p_ln "Total time spent: " $C_MAGENTA "$time" $C_CYAN " seconds."
-    if [ "$existingversion" != true ] && [ "$uninstall" != true ]; then
+    if [ "$existingversion" != true ] && [ "$uninstall" != true ]
+    then
         p_ln
         p_ln $C_CYAN "OpenMPT directory:        " $C_MAGENTA "${MPTDIR}"
         p_ln $C_CYAN "32-bit exe:               " $C_MAGENTA "${MPTDIR}/bin/x86/OpenMPT.exe"
         p_ln $C_CYAN "64-bit exe:               " $C_MAGENTA "${MPTDIR}/bin/amd64/OpenMPT.exe"
         p_ln $C_CYAN "Wine directory:           " $C_MAGENTA "~/.wine-openmpt"
-        p_ln $C_CYAN "OpenMPT config directory: " $C_MAGENTA "~/.wine-openmpt/drive_c/users/\$USER/AppData/Roaming"
+        p_ln $C_CYAN "OpenMPT config directory: " $C_MAGENTA "~/.wine-openmpt/drive_c/users/\$USER/AppData/Roaming/OpenMPT"
         p_ln $C_CYAN "Desktop entry:            " $C_MAGENTA "${APPDIR}/openmpt.desktop"
         p_ln $C_CYAN "Desktop icon:             " $C_MAGENTA "${ICODIR}/hicolor/256x256/apps/openmpt.png"
         p_ln $C_CYAN "Launch script:            " $C_MAGENTA "${BINDIR}/openmpt"
@@ -140,7 +145,8 @@ endmessage() {
     fi
 }
 
-error_deps() {
+error_deps()
+{
     p_rw $F_BOLD $C_RED
     p_ln "The following dependencies are not installed:"
     for DEP in "$@"; do p_ln $C_RED "* " $C_WHITE "$DEP"; done
@@ -148,7 +154,8 @@ error_deps() {
     p_rw $F_UNBOLD $C_RESET
 }
 
-error_oldsetup_installed() {
+error_oldsetup_installed()
+{
     local NAME="$1"
     p_rw $F_BOLD $C_RED
     p_ln "OpenMPT has already been installed for ${NAME} using the official installer."
@@ -168,7 +175,8 @@ error_oldsetup_installed() {
     p_ln $F_UNBOLD $C_RESET
 }
 
-error_v01_installed() {
+error_v01_installed()
+{
     local NAME="$1"
     p_rw $F_BOLD $C_RED
     p_ln "An old local OpenMPT setup has been detected in ${NAME}'s account,"
@@ -182,7 +190,8 @@ error_v01_installed() {
     p_ln $F_UNBOLD $C_RESET
 }
 
-error() {
+error()
+{
     local status=$1
     case $status in
         1)  p_ln $F_BOLD $C_RED "Invalid argument '$2'.";;
@@ -204,7 +213,8 @@ error() {
     quit $status
 }
 
-checkstatus_curl() {
+checkstatus_curl()
+{
     local status=$1
     [ $status -eq 0 ] && p_ln $F_BOLD $C_GREEN "DONE" $F_UNBOLD $C_RESET && return
     p_ln $F_BOLD $C_RED "FAILED" $F_UNBOLD $C_RESET
@@ -219,7 +229,8 @@ checkstatus_curl() {
     esac
 }
 
-checkstatus_unzip() {
+checkstatus_unzip()
+{
     local status=$1
     [ $status -eq 0 ] && p_ln $F_BOLD $C_GREEN "DONE" $F_UNBOLD $C_RESET && return
     p_ln $F_BOLD $C_RED "FAILED" $F_UNBOLD $C_RESET
@@ -232,28 +243,33 @@ checkstatus_unzip() {
     esac
 }
 
-checkstatus_fileop() {
+checkstatus_fileop()
+{
     local status=$1
     [ $status -eq 0 ] && p_ln $F_BOLD $C_GREEN "DONE" $F_UNBOLD $C_RESET && return
     p_ln $F_BOLD $C_RED "FAILED" $F_UNBOLD $C_RESET
     error 6
 }
 
-download_file() {
-    if [ -z "$proxy" ]; then
-        curl --fail --retry 99 -s "$1" -o "$2"
+download_file()
+{
+    if [ -z "$proxy" ]
+    then
+        curl --fail --retry 3 -s "$1" -o "$2"
     else
-        curl --fail --retry 99 -x "$proxy" -s "$1" -o "$2"
+        curl --fail --retry 3 -x "$proxy" -s "$1" -o "$2"
     fi
     checkstatus_curl $? "$2"
 }
 
-unzip_file() {
+unzip_file()
+{
     unzip -q "$1" -d "$2"
     checkstatus_unzip $? "$1"
 }
 
-get_latest_version() {
+get_latest_version()
+{
     p_rw $F_BOLD $C_WHITE "Getting latest OpenMPT version number ($1 channel)..."
     download_file "$URL_MPTAPI$1" "$TMPDIR/version.json"
     version=$(cat "$TMPDIR/version.json" | jq -r '.[].version')
@@ -262,31 +278,36 @@ get_latest_version() {
     rm "$TMPDIR/version.json"
 }
 
-download() {
-    p_rw $F_BOLD $C_WHITE "Downloading OpenMPT $version (32-bit)..."
+download()
+{
+    p_rw $F_BOLD $C_WHITE "Downloading 32-bit version..."
     download_file "$url_download32" "$TMPDIR/mpt32.zip"
-    p_rw $F_BOLD $C_WHITE "Downloading OpenMPT $version (64-bit)..."
+    p_rw $F_BOLD $C_WHITE "Downloading 64-bit version..."
     download_file "$url_download64" "$TMPDIR/mpt64.zip"
 }
 
-download_icon() {
+download_icon()
+{
     p_rw $F_BOLD $C_WHITE "Downloading desktop icon..."
     download_file "$URL_MPTICON" "$TMPDIR/openmpt.png"
 }
 
-extract() {
+extract()
+{
     mkdir "$TMPDIR/mpt32"
     mkdir "$TMPDIR/mpt64"
-    p_rw $F_BOLD $C_WHITE "Extracting OpenMPT $version (32-bit)..."
+    p_rw $F_BOLD $C_WHITE "Extracting 32-bit version..."
     unzip_file "$TMPDIR/mpt32.zip" "$TMPDIR/mpt32"
-    p_rw $F_BOLD $C_WHITE "Extracting OpenMPT $version (64-bit)..."
+    p_rw $F_BOLD $C_WHITE "Extracting 64-bit version..."
     unzip_file "$TMPDIR/mpt64.zip" "$TMPDIR/mpt64"
 }
 
-check_diff() {
+check_diff()
+{
     local file32="$1"
     local file64="${file32/"mpt32"/"mpt64"}"
-    if diff "$file32" "$file64" &>/dev/null; then
+    if diff "$file32" "$file64" &>/dev/null
+    then
         local dir="$(cd "$(dirname "$file32")" && pwd)"
         mkdir -p "${dir/"mpt32"/"mptcommon"}"
         mv "$file32" "${file32/"mpt32"/"mptcommon"}"
@@ -297,19 +318,23 @@ check_diff() {
     fi
 }
 
-merge_common_recurse() {
-    for FILE in *; do
+merge_common_recurse()
+{
+    for FILE in *
+    do
         [ -d "$FILE" ] && (cd -- "$FILE" && merge_common_recurse) || check_diff "$(pwd)/$FILE"
     done
 }
 
-handle_pluginbridge() {
+handle_pluginbridge()
+{
     mv $TMPDIR/mptcommon/PluginBridge*x86.exe   $TMPDIR/mptcommon/bin/x86
     mv $TMPDIR/mptcommon/PluginBridge*amd64.exe $TMPDIR/mptcommon/bin/amd64
     rm $TMPDIR/mptcommon/PluginBridge*.exe
 }
 
-merge_common() {
+merge_common()
+{
     mkdir -p "$TMPDIR/mptcommon/bin/x86"
     mkdir -p "$TMPDIR/mptcommon/bin/amd64"
     p_rw $F_BOLD $C_WHITE "Merging common files..."
@@ -320,14 +345,23 @@ merge_common() {
     error 127
 }
 
-prepare() {
+prepare()
+{
     extract
     rm "$TMPDIR/mpt32.zip" && rm "$TMPDIR/mpt64.zip"
     merge_common
     rm "$TMPDIR/mptcommon/OpenMPT.portable"
 }
 
-install_openmpt_files() {
+check_running()
+{
+    pgrep OpenMPT.exe &>/dev/null &&
+    p_rw $F_BOLD $C_YELLOW "OpenMPT is currently running. Close it and press enter to continue." $F_UNBOLD $C_RESET
+    while pgrep OpenMPT.exe &>/dev/null ; do read ; done
+}
+
+install_openmpt_files()
+{
     mkdir -p "$MPTDIR"
     p_rw $F_BOLD $C_WHITE "Installing OpenMPT files..."
     cp -RT "$TMPDIR/mptcommon" "$MPTDIR"
@@ -337,21 +371,24 @@ install_openmpt_files() {
     cp "$SCRIPTDIR/resources/wine_config.reg" "$MPTDIR"
 }
 
-install_desktop_entry() {
+install_desktop_entry()
+{
     mkdir -p "$APPDIR"
     p_rw $F_BOLD $C_WHITE "Installing desktop entry..."
     cp "$SCRIPTDIR/resources/openmpt.desktop" "$APPDIR"
     checkstatus_fileop $?
 }
 
-install_icon() {
+install_icon()
+{
     mkdir -p "$ICODIR/hicolor/256x256/apps"
     p_rw $F_BOLD $C_WHITE "Installing desktop icon..."
     cp "$TMPDIR/openmpt.png" "$ICODIR/hicolor/256x256/apps"
     checkstatus_fileop $?
 }
 
-install_launch_script() {
+install_launch_script()
+{
     mkdir -p "$BINDIR"
     p_rw $F_BOLD $C_WHITE "Installing launch script..."
     cp "$SCRIPTDIR/resources/openmpt" "$BINDIR" && cp "$SCRIPTDIR/resources/mptwine" "$BINDIR"
@@ -360,8 +397,10 @@ install_launch_script() {
     chmod +x "$BINDIR/mptwine"
 }
 
-migrate_old_config() {
-    for i in "${!oldconfigusernames[@]}"; do
+migrate_old_config()
+{
+    for i in "${!oldconfigusernames[@]}"
+    do
         local NAME="${oldconfigusernames[$i]}"
         local HOME="${oldconfiguserhomes[$i]}"
         local OLDDATA="${HOME}/.wine/drive_c/users/${NAME}/AppData/Roaming/OpenMPT"
@@ -373,31 +412,36 @@ migrate_old_config() {
     done
 }
 
-uninstall_openmpt_files() {
+uninstall_openmpt_files()
+{
     p_rw $F_BOLD $C_WHITE "Uninstalling OpenMPT files..."
     rm -rf "$MPTDIR"
     checkstatus_fileop $?
 }
 
-uninstall_desktop_entry() {
+uninstall_desktop_entry()
+{
     p_rw $F_BOLD $C_WHITE "Uninstalling desktop entry..."
     rm -f "$APPDIR/openmpt.desktop"
     checkstatus_fileop $?
 }
 
-uninstall_icon() {
+uninstall_icon()
+{
     p_rw $F_BOLD $C_WHITE "Uninstalling desktop icon..."
     rm -f "$ICODIR/hicolor/256x256/apps/openmpt.png"
     checkstatus_fileop $?
 }
 
-uninstall_launch_script() {
+uninstall_launch_script()
+{
     p_rw $F_BOLD $C_WHITE "Uninstalling launch script..."
     rm -f "$BINDIR/openmpt" "$BINDIR/mptwine"
     checkstatus_fileop $?
 }
 
-show_usage() {
+show_usage()
+{
     p_ln $F_BOLD $C_CYAN    "Usage:"
     p_ln $F_UNBOLD $C_GREEN "$SCRIPT " $C_CYAN "[options] [channel]" $C_RESET
     p_ln
@@ -422,24 +466,29 @@ show_usage() {
     p_ln "The download channel is ignored by the uninstall option."
 }
 
-check_root() {
+check_root()
+{
     [ "$EUID" -ne 0 ] && error 32
 }
 
-check_deps() {
+check_deps()
+{
     local missingdeps=()
     for DEP in "$@"; do ! command -v "$DEP" &>/dev/null && missingdeps+=("$DEP"); done
     [ ${#missingdeps} -gt 0 ] && error 2 "${missingdeps[@]}"
 }
 
-check_uninstall() {
+check_uninstall()
+{
     [ -f "$MPTDIR/.mptver" ] && version="$(< "$MPTDIR/.mptver")"
     p_rw $F_BOLD $C_YELLOW
-    if ! [ -d "$MPTDIR" ] && ! [ -f "$APPDIR/openmpt.desktop" ] && ! [ -f "$BINDIR/openmpt" ] ; then
+    if ! [ -d "$MPTDIR" ] && ! [ -f "$APPDIR/openmpt.desktop" ] && ! [ -f "$BINDIR/openmpt" ]
+    then
         p_ln "OpenMPT is not installed."
         quit
     fi
-    if [ "$automode" = true ]; then
+    if [ "$automode" = true ]
+    then
         [ -z "$version" ] &&
         p_ln "Uninstalling OpenMPT." ||
         p_ln "Uninstalling OpenMPT $version."
@@ -458,10 +507,12 @@ check_uninstall() {
     fi
 }
 
-auto_channel() {
+auto_channel()
+{
     p_rw $F_BOLD $C_YELLOW
     p_ln "No download channel specified."
-    if [ -f "$MPTDIR/.mptchn" ]; then
+    if [ -f "$MPTDIR/.mptchn" ]
+    then
         channel="$(< "$MPTDIR/.mptchn")"
         p_ln "Defaulting to the currently installed channel ('$channel')."
     else
@@ -471,14 +522,17 @@ auto_channel() {
     p_ln $F_UNBOLD $C_RESET
 }
 
-parse_arg_proxy() {
-    [[ -z "$1" ]] && error 24;
+parse_arg_proxy()
+{
+    [[ -z "$1" ]] && error 24
     local regex='(socks4a?|socks5h?|https?):\/\/.*'
-    [[ $1 =~ $regex ]] && proxy="$1" || error 25 "$1";
+    [[ $1 =~ $regex ]] && proxy="$1" || error 25 "$1"
 }
 
-parse_args() {
-    while [[ $# -gt 0 ]]; do
+parse_args()
+{
+    while [[ $# -gt 0 ]]
+    do
         case "$1" in
             -h|--help)
                 show_usage
@@ -497,7 +551,7 @@ parse_args() {
                 shift;shift
             ;;
             --)
-                shift;
+                shift
                 ARGS=("$@")
                 break
             ;;
@@ -511,7 +565,8 @@ parse_args() {
         esac
     done
     set -- "${ARGS[@]}"
-    if [ "$uninstall" != true ]; then
+    if [ "$uninstall" != true ]
+    then
         [ -z "$1" ] && auto_channel && return
         [ "$1" != "release"     ] &&
         [ "$1" != "next"        ] &&
@@ -520,8 +575,10 @@ parse_args() {
     fi
 }
 
-check_oldsetup_installed() {
-    for i in "${!usernames[@]}"; do
+check_oldsetup_installed()
+{
+    for i in "${!usernames[@]}"
+    do
         local NAME=${usernames[$i]}
         local HOME=${userhomes[$i]}
         [ -d $HOME/.local/share/applications/wine/Programs/OpenMPT ] ||
@@ -535,12 +592,14 @@ check_oldsetup_installed() {
     done
 }
 
-prompt_oldsetup_config() {
+prompt_oldsetup_config()
+{
     local NAME="$1"
     local HOME="$2"
     p_rw $F_UNBOLD $C_YELLOW
     p_ln "OpenMPT settings detected in ${NAME}'s default Wine directory (" $C_CYAN "${HOME}/.wine" $C_YELLOW ")."
-    if [ "$automode" = true ]; then
+    if [ "$automode" = true ]
+    then
         p_ln "They will be migrated to this install."
         oldconfigusernames+=("$NAME")
         oldconfiguserhomes+=("$HOME")
@@ -556,8 +615,10 @@ prompt_oldsetup_config() {
     fi
 }
 
-check_oldsetup_config() {
-    for i in "${!usernames[@]}"; do
+check_oldsetup_config()
+{
+    for i in "${!usernames[@]}"
+    do
         local NAME="${usernames[$i]}"
         local HOME="${userhomes[$i]}"
         [ -d $HOME/.wine/drive_c/users/$NAME/AppData/Roaming/OpenMPT ] &&
@@ -565,12 +626,14 @@ check_oldsetup_config() {
     done
 }
 
-get_resource() {
+get_resource()
+{
     p_rw $F_BOLD $C_WHITE "Downloading file..."
     download_file "$URL_SCRIPTRESOURCES$1" "$SCRIPTDIR/resources/$1"
 }
 
-prompt_resource() {
+prompt_resource()
+{
     p_rw $C_YELLOW
     p_ln "File '" $C_CYAN "$1" $C_YELLOW "' not found."
     p_rw "Do you want to download it from the GitHub repo?" $F_UNBOLD $C_RESET " (Y/n) "
@@ -582,17 +645,21 @@ prompt_resource() {
     esac
 }
 
-check_resource() {
+check_resource()
+{
     ! [ -f "$SCRIPTDIR/resources/$1" ] && prompt_resource "$1"
 }
 
-check_resources() {
+check_resources()
+{
     mkdir -p "$SCRIPTDIR/resources"
     for RESOURCE in "$@"; do check_resource "$RESOURCE"; done
 }
 
-check_v01_installed() {
-    for i in "${!usernames[@]}"; do
+check_v01_installed()
+{
+    for i in "${!usernames[@]}"
+    do
         local NAME="${usernames[$i]}"
         local HOME="${userhomes[$i]}"
         [ -d "$HOME/.openmpt/resources"                                  ] ||
@@ -605,20 +672,25 @@ check_v01_installed() {
     done
 }
 
-check_install() {
+check_install()
+{
     [ -f "$MPTDIR/.mptver" ] && existingversion=true
     p_ln $F_BOLD $C_YELLOW
-    if [ "$automode" = true ]; then
+    if [ "$automode" = true ]
+    then
         local message="Installing OpenMPT $version."
-        if [ -f "$MPTDIR/.mptchn" ] && [ "$(< "$MPTDIR/.mptchn")" = "development" ] && [ "$channel" != "development" ]; then
+        if [ -f "$MPTDIR/.mptchn" ] && [ "$(< "$MPTDIR/.mptchn")" = "development" ] && [ "$channel" != "development" ]
+        then
             p_ln "The currently installed version of OpenMPT is a development version,"
             p_ln "but the version you are about to install is a stable release."
             p_ln "Aborting installation."
             p_ln
             cancel
-        elif [ "$existingversion" = true ]; then
+        elif [ "$existingversion" = true ]
+        then
             p_ln "Existing OpenMPT install found."
-            if [ "$(< "$MPTDIR/.mptver")" = "$version" ]; then
+            if [ "$(< "$MPTDIR/.mptver")" = "$version" ]
+            then
                 message="OpenMPT $version is already installed. Reinstalling."
             else
                 p_ln "The currently installed version is $(< "$MPTDIR/.mptver")."
@@ -628,7 +700,8 @@ check_install() {
         p_ln
     else
         local message="You are about to install OpenMPT $version. Continue?"
-        if [ -f "$MPTDIR/.mptchn" ] && [ "$(< "$MPTDIR/.mptchn")" = "development" ] && [ "$channel" != "development" ]; then
+        if [ -f "$MPTDIR/.mptchn" ] && [ "$(< "$MPTDIR/.mptchn")" = "development" ] && [ "$channel" != "development" ]
+        then
             downgrade=true
             p_ln "WARNING:"
             p_ln "The currently installed version of OpenMPT is a development version,"
@@ -639,9 +712,11 @@ check_install() {
             p_ln "development channel instead."
             p_ln
         fi
-        if [ "$existingversion" = true ]; then
+        if [ "$existingversion" = true ]
+        then
             p_ln "Existing OpenMPT install found."
-            if [ "$(< "$MPTDIR/.mptver")" = "$version" ]; then
+            if [ "$(< "$MPTDIR/.mptver")" = "$version" ]
+            then
                 message="You already have OpenMPT $version installed. Install anyway?"
             else
                 p_ln "The currently installed version is $(< "$MPTDIR/.mptver")."
@@ -673,7 +748,8 @@ startmessage
 parse_args "$@"
 check_root
 check_oldsetup_installed
-if [ "$uninstall" = true ]; then
+if [ "$uninstall" = true ]
+then
     check_deps ${DEPS_COMMON[@]} ${DEPS_UNINSTALL[@]}
     check_uninstall
     get_start_time
@@ -693,6 +769,7 @@ else
     download
     download_icon
     prepare
+    check_running
     install_openmpt_files
     install_desktop_entry
     install_icon

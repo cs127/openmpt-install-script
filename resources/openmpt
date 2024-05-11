@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # cs127's OpenMPT launch script for Linux
-# version 0.4.0
+# version 0.5.0
 
 # https://cs127.github.io
 
@@ -29,22 +29,27 @@ export WINEPREFIX=$HOME/.wine-openmpt
 [ -z "$WINEDEBUG" ] && export WINEDEBUG=-all
 
 # Detect if running as root.
-if [ "$EUID" -eq 0 ]; then
+if [ "$EUID" -eq 0 ]
+then
     echo "OpenMPT should not be run as root."
     exit 64
 fi
 
 # Detect architecture.
-if [ -z "$MPTARCH" ]; then
+if [ -z "$MPTARCH" ]
+then
     uname -m | grep '64' &>/dev/null && MPTARCH=64 || MPTARCH=32
-elif [ "$MPTARCH" != "32" ] && [ "$MPTARCH" != "64" ]; then
+elif [ "$MPTARCH" != "32" ] && [ "$MPTARCH" != "64" ]
+then
     echo "Invalid architecture '$MPTARCH'. Must be '32' or '64'."
     exit 65
 fi
 
 # Handle short options (currently only -s).
-if [[ $1 != --* ]]; then
-    while getopts "s" opt; do
+if [[ $1 != --* ]]
+then
+    while getopts "s" opt
+    do
         case $opt in
             s) args+="/shared " ;;
         esac
@@ -52,12 +57,15 @@ if [[ $1 != --* ]]; then
 fi
 
 # Iterate through all arguments and parse them as options or files appropriately.
-for arg in "$@"; do
-    if [[ "$arg" == --* ]]; then
+for arg in "$@"
+do
+    if [[ "$arg" == --* ]]
+    then
         [ "$arg" = "--no-plugins"    ] && arg="--no-plugs"
         [ "$arg" = "--no-soundfonts" ] && arg="--no-dls"
         [ "$arg" != "--portable"     ] && args+="$(echo "$arg" | sed -E -e 's/--/\//g' -e 's/-(.)/\U\1/g') "
-    elif [[ "$arg" != -* ]]; then
+    elif [[ "$arg" != -* ]]
+    then
         files+=("$(winepath -w "$arg")")
     fi
 done

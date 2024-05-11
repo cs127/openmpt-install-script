@@ -1,7 +1,7 @@
 [Desktop Entry]
 Type=Application
 Name=OpenMPT
-GenericName=Module Music Tracker
+GenericName=Music Tracker
 Comment=Create and modify module music
 Icon=openmpt
 Exec=/usr/bin/openmpt --shared %F
